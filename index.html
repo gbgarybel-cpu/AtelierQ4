@@ -174,6 +174,7 @@ input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:tra
     <div class="brand"><h1>Pilotage animateur</h1><span id="names-state">noms réels</span></div>
     <div class="tools">
       <button class="btn ghost" id="btn-names-global">Révéler les noms aux équipes</button>
+      <button class="btn ghost" id="btn-export">Exporter les arbitrages (CSV)</button>
       <button class="btn" id="btn-newgroup">Nouvelle équipe</button>
       <button class="btn ghost" id="btn-quit-admin">Quitter</button>
     </div>
@@ -656,6 +657,45 @@ async function openAdmin(){
 }
 $('btn-quit-admin').onclick=()=>{show('s-gate')};
 $('btn-names-global').onclick=()=>{ pushSettings(!namesGlobalOn); renderAdmin(); };
+
+/* Export CSV : une ligne par (équipe, agent, destination, action) — format long,
+   facile à filtrer/croiser dans Excel ou Sheets pour comparer les arbitrages
+   entre équipes, agent par agent. */
+function buildExportRows(){
+  const rows=[['Équipe','Team lead','Agent','Nom agent','Destination','Catégorie','Action','CA équipe (€)','Score équipe (%)']];
+  for(const g of groups){
+    if(!g.allocStr)continue;
+    const cut=decOnb(g.cut||''), onb=decOnb(g.onb||'');
+    const ca=g.ca||BASE_CA, score=scoreOf(ca).toFixed(1);
+    for(const a of AGENTS){
+      const nom=LOCAL_NAMES[a.code]||'';
+      for(const d of DEST){
+        if(cut[a.idx]&&cut[a.idx][d.idx])
+          rows.push([g.name,g.lead||'',a.code,nom,d.nom,d.cat||'','Retrait',Math.round(ca),score]);
+        if(onb[a.idx]&&onb[a.idx][d.idx])
+          rows.push([g.name,g.lead||'',a.code,nom,d.nom,d.cat||'','Onboarding',Math.round(ca),score]);
+      }
+    }
+  }
+  return rows;
+}
+function toCSV(rows){
+  return rows.map(r=>r.map(v=>{
+    const s=String(v);
+    return /[",;\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  }).join(';')).join('\r\n');
+}
+$('btn-export').onclick=()=>{
+  const rows=buildExportRows();
+  if(rows.length<=1){ banner('admin-banner','Aucun arbitrage à exporter pour l\'instant.'); return }
+  const csv='﻿'+toCSV(rows);
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.href=url; link.download='atelier_q4_arbitrages_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
 
 $('btn-newgroup').onclick=()=>{$('ng-name').focus()};
 
