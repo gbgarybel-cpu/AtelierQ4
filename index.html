@@ -603,7 +603,7 @@ function banner(id,msg){const el=$(id);if(!el)return;
 /* Lien direct par équipe : ?team=<id> dans l'URL rejoint cette équipe sans
    passer par l'écran de sélection. Prioritaire sur la reprise automatique. */
 const teamParam = new URLSearchParams(location.search).get('team');
-let teamParamJoined = false;
+let teamParamJoined = false, teamJoinAttempts = 0;
 function tryJoinFromUrl(){
   if(teamParamJoined || !teamParam || me) return;
   const g=groups.find(x=>x.id===teamParam);
@@ -621,6 +621,7 @@ async function fetchGroups(){
     namesGlobalOn=namesOnFresh;
     apiOk=true;
     localSave();
+    if(teamParam&&!teamParamJoined)teamJoinAttempts++;
     renderGatePicker();
     tryJoinFromUrl();
     if($('s-admin').classList.contains('on'))renderAdmin();
@@ -629,6 +630,8 @@ async function fetchGroups(){
   }catch(e){
     if(apiOk)banner('admin-banner','Synchronisation interrompue — les équipes ne remontent plus en direct.');
     apiOk=false;
+    if(teamParam&&!teamParamJoined)teamJoinAttempts++;
+    renderGatePicker();
   }
 }
 
@@ -652,6 +655,14 @@ async function fetchGroups(){
 /* ═══════════ GATE ═══════════ */
 function renderGatePicker(){
   const box=$('gate-groups');
+  if(teamParam&&!teamParamJoined){
+    box.innerHTML = teamJoinAttempts>=5
+      ? '<div class="hint">Impossible de charger votre équipe après plusieurs tentatives. '+
+        'Vérifiez votre connexion internet, ou redemandez le lien à l\'animateur — l\'équipe a peut-être '+
+        'été supprimée ou renommée.</div>'
+      : '<div class="hint">Connexion à votre équipe…</div>';
+    return;
+  }
   if(!groups.length){box.innerHTML='<div class="hint">Aucune équipe pour l\'instant. '+
     'L\'animateur doit en créer depuis le pilotage.</div>';return}
   box.innerHTML=groups.map(g=>'<button data-join="'+esc(g.id)+'"><span>'+esc(g.name)+
