@@ -273,7 +273,7 @@ const ADMIN_CODE = 'atelier2024';
 /* Change ce numéro à chaque fois que le modèle de données change (agents/destinations/
    unité de capacité). Une partie sauvegardée sous un autre numéro est ignorée au
    chargement plutôt que de réinjecter des valeurs incompatibles. */
-const DATA_VERSION = 'postes-v4-besoin-q1';
+const DATA_VERSION = 'postes-v5-onboarding-opps';
 const LOCAL_NAMES = {"A01":"Alexandra Mennechez","A02":"Alexandre Paprocki","A03":"Alice Saint-Jean","A04":"Amandine Godin","A05":"Antoine Revardeau","A06":"Aurelie Guesnet","A07":"Bertrand Cazabat","A08":"Camille Lecomte","A10":"Charline Blas","A11":"Charline Verdeaux","A12":"Charlotte Garrido","A13":"Chloé Solanki","A14":"Claire Henry","A15":"Claire Lardenois","A16":"Clement Thonneau","A17":"Constant Le Dantec","A18":"Edwige Clad","A19":"Elise Francois","A20":"Ella Thevenet","A21":"Eloïse Lebert","A22":"Emilie Belguise","A23":"Emy Chomon","A24":"Fabienne Pottelain","A25":"Fanny Mangin","A26":"Fiona Tandar","A27":"Guillaume Dupont","A28":"Helene Ristic","A29":"Joumala ElAlaoui","A30":"Juliette Cazes","A31":"Lauren Lebreton","A32":"Laurine Ghis","A34":"Line Desmazures","A35":"Lucie Collado","A36":"Malek Adjroud","A37":"Marceau Cattin","A38":"Margot Bonnet","A39":"Marine Hecquard","A40":"Marion Hucbourg Hernandez","A41":"Marion-Ambroisine QUINARD","A42":"Melissa Braun","A43":"Mila Gascoin","A44":"Oceane Sabeur","A45":"Pauline Preynat","A46":"Philippe Tkatchouk","A47":"Samantha Philippon-joubert","A48":"Scarlett Vis","A49":"Thibaut Brachet","A50":"Thomas Guibert","A51":"Valerie Aleksandrowicz","A52":"Victoria Nouchi","A53":"Yann Magueur","A54":"Zoe Morales"};
 
 /* [nom, opps_q4_reels, postes_besoin, categorie, indice_conversion, indice_panier] — postes_besoin
@@ -395,13 +395,24 @@ function decOnb(s){const o={};for(const a of AGENTS)o[a.idx]={};
   if(s)for(const t of s.split('~')){const[ai,di]=t.split('.');if(o[ai])o[ai][di]=true}return o}
 
 /* ═══════════ MODÈLE ═══════════
-   Un poste = un agent onboardé sur une destination (plus de notion de quantité de
-   slots). La valeur d'un poste sur une destination = sa part du volume réel de
-   cette destination (opps réelles ÷ nombre de postes que la destination supporte). */
-const slotCA = (a,d)=> CR3_M*d.ic*a.ic * AOV_M*d.ip*a.ip * d.oppsPerSeat;
-const totalCA = al=>{let c=0;for(const a of AGENTS)for(const d of DEST){const s=al[a.idx][d.idx];if(s)c+=s*slotCA(a,d)}return c};
-const agentCA = (al,a)=>{let c=0;for(const d of DEST){const s=al[a.idx][d.idx];if(s)c+=s*slotCA(a,d)}return c};
+   Un poste = un agent onboardé sur une destination (pas de notion de quantité).
+   Deux façons de valoriser un poste, selon que la destination fait partie ou non
+   du portefeuille réel de départ de l'agent :
+   - poste réel (déjà détenu aujourd'hui) : on garde sa part du volume réel observé
+     sur cette destination (opps réelles ÷ nombre de postes qu'elle supporte) — c'est
+     une donnée observée, pas une estimation.
+   - poste onboardé (nouveau, ajouté en phase 2) : pas d'historique, donc on estime —
+     en haute saison un agent reçoit environ 70 opps/mois, réparties à parts égales
+     entre toutes les destinations qu'il couvre alors (plus il en a, moins chacune
+     en reçoit). Le CR3 et l'AOV utilisés sont ceux de CET agent sur CETTE
+     destination (son indice appliqué à la moyenne marché de la destination). */
+const AGENT_QUARTER_OPPS = 70*3; // 70 opps/mois en haute saison, sur un trimestre
+const heldSlotCA = (a,d)=> CR3_M*d.ic*a.ic * AOV_M*d.ip*a.ip * d.oppsPerSeat;
+const onbSlotCA = (a,d,destCount)=> CR3_M*d.ic*a.ic * AOV_M*d.ip*a.ip * (AGENT_QUARTER_OPPS/Math.max(destCount,1));
 const used = (al,ai)=>{let n=0;for(const d of DEST)n+=al[ai][d.idx];return n};
+const seatCA = (al,a,d)=> BASE[a.idx][d.idx]>0 ? heldSlotCA(a,d) : onbSlotCA(a,d,used(al,a.idx));
+const totalCA = al=>{let c=0;for(const a of AGENTS)for(const d of DEST){const s=al[a.idx][d.idx];if(s)c+=s*seatCA(al,a,d)}return c};
+const agentCA = (al,a)=>{let c=0;for(const d of DEST){const s=al[a.idx][d.idx];if(s)c+=s*seatCA(al,a,d)}return c};
 const placedTotal = al=>{let n=0;for(const a of AGENTS)n+=used(al,a.idx);return n};
 
 function marketIdx(al){let n=0,c=0,v=0;
@@ -413,51 +424,63 @@ function marketIdx(al){let n=0,c=0,v=0;
    encodée en agent.destination.1, pas de quantité). */
 const BASE_ENC = "0.1.1~0.3.1~0.7.1~0.8.1~0.21.1~0.26.1~1.5.1~1.10.1~1.15.1~1.32.1~1.33.1~2.1.1~2.5.1~2.12.1~2.22.1~2.32.1~3.5.1~3.8.1~3.11.1~3.12.1~3.23.1~3.25.1~3.30.1~4.1.1~4.5.1~4.20.1~4.31.1~4.32.1~5.5.1~5.8.1~5.10.1~5.12.1~5.15.1~5.21.1~5.24.1~5.32.1~5.33.1~6.2.1~6.12.1~6.15.1~6.16.1~6.22.1~6.28.1~6.29.1~6.31.1~6.33.1~7.4.1~7.5.1~7.10.1~7.12.1~7.18.1~7.28.1~7.29.1~7.34.1~8.0.1~8.6.1~8.8.1~8.13.1~8.17.1~8.32.1~8.33.1~9.1.1~9.4.1~9.5.1~9.8.1~9.11.1~9.21.1~9.24.1~9.26.1~10.15.1~10.16.1~10.22.1~10.29.1~10.31.1~10.33.1~11.4.1~11.12.1~11.13.1~11.19.1~11.22.1~11.28.1~11.30.1~11.32.1~11.33.1~11.34.1~12.5.1~12.10.1~12.24.1~12.29.1~12.33.1~12.34.1~13.5.1~13.8.1~13.12.1~13.13.1~14.0.1~14.1.1~14.3.1~14.4.1~14.13.1~14.17.1~14.18.1~14.27.1~14.30.1~14.32.1~14.34.1~15.0.1~15.3.1~15.5.1~15.6.1~15.7.1~15.12.1~15.26.1~16.8.1~16.10.1~16.12.1~16.13.1~16.32.1~17.5.1~17.10.1~17.14.1~17.15.1~17.21.1~17.25.1~17.33.1~18.5.1~18.10.1~18.12.1~18.19.1~18.30.1~18.33.1~19.8.1~19.12.1~19.15.1~19.19.1~19.30.1~19.34.1~20.3.1~20.5.1~20.12.1~20.15.1~20.22.1~20.32.1~21.3.1~21.5.1~21.9.1~21.10.1~21.12.1~21.14.1~21.33.1~22.3.1~22.5.1~22.12.1~22.19.1~22.20.1~22.27.1~22.29.1~22.32.1~22.33.1~23.5.1~23.8.1~23.12.1~23.13.1~23.16.1~23.17.1~23.22.1~23.31.1~23.32.1~24.5.1~24.21.1~24.22.1~24.29.1~24.33.1~25.0.1~25.3.1~25.4.1~25.5.1~25.6.1~25.7.1~25.8.1~25.9.1~25.11.1~25.26.1~25.33.1~25.34.1~26.0.1~26.3.1~26.6.1~26.7.1~26.8.1~26.15.1~26.21.1~26.26.1~26.29.1~26.32.1~27.1.1~27.3.1~27.5.1~27.10.1~27.16.1~27.19.1~27.28.1~27.31.1~27.33.1~28.10.1~28.12.1~28.13.1~28.15.1~29.5.1~29.8.1~29.29.1~29.33.1~30.2.1~30.21.1~30.22.1~30.23.1~30.25.1~30.27.1~30.29.1~31.5.1~31.11.1~31.12.1~31.13.1~31.18.1~31.24.1~31.33.1~32.0.1~32.1.1~32.3.1~32.6.1~32.13.1~32.23.1~32.26.1~32.27.1~32.29.1~32.31.1~33.0.1~33.3.1~33.8.1~33.10.1~33.12.1~33.30.1~34.5.1~34.10.1~34.31.1~34.32.1~34.34.1~35.5.1~35.8.1~35.12.1~35.27.1~35.29.1~35.30.1~35.33.1~36.3.1~36.5.1~36.7.1~36.8.1~36.12.1~36.21.1~36.28.1~37.12.1~37.15.1~37.24.1~37.30.1~38.5.1~38.29.1~38.33.1~39.10.1~39.13.1~39.15.1~39.17.1~39.23.1~39.26.1~39.28.1~39.32.1~40.5.1~40.22.1~40.27.1~40.31.1~40.33.1~41.3.1~41.8.1~41.10.1~41.12.1~41.13.1~41.15.1~41.18.1~41.20.1~41.21.1~41.28.1~41.32.1~42.0.1~42.6.1~42.8.1~42.29.1~42.31.1~43.8.1~43.13.1~43.15.1~43.29.1~43.31.1~43.32.1~44.0.1~44.4.1~44.6.1~44.8.1~44.13.1~44.15.1~44.24.1~44.26.1~44.31.1~44.34.1~45.5.1~45.11.1~45.13.1~45.15.1~45.23.1~45.24.1~45.33.1~46.5.1~46.8.1~46.27.1~46.32.1~46.33.1~47.5.1~47.10.1~47.12.1~47.14.1~47.22.1~47.24.1~47.31.1~47.33.1~48.2.1~48.12.1~48.16.1~48.22.1~48.29.1~48.31.1~48.33.1~49.5.1~49.8.1~49.10.1~49.13.1~50.5.1~50.8.1~50.13.1~50.19.1~50.21.1~50.30.1~50.33.1~51.5.1~51.12.1~51.24.1~51.29.1~51.31.1";
 const BASE = decAlloc(BASE_ENC);
+/* Bonus de capacité d'onboarding pour les destinations Star : elles ouvrent
+   davantage de places que les autres catégories (x1.5 de marge en plus par
+   rapport à leur cible Q1, arrondi au-dessus, +1 minimum) — le nombre d'agents
+   déjà réellement onboardés, lui, ne change pas. */
+for(const d of DEST){
+  if(d.cat!=='Star')continue;
+  const held=AGENTS.reduce((s,a)=>s+(BASE[a.idx][d.idx]||0),0);
+  const origRoom=Math.max(0,d.slots-held);
+  d.slots=held+Math.max(origRoom+1,Math.ceil(origRoom*1.5));
+}
 const BASE_CA = totalCA(BASE);
 const TOTAL_CAP = AGENTS.reduce((s,a)=>s+a.slots,0);
 {const el=document.getElementById('gate-lede'); if(el) el.textContent=
   TOTAL_CAP+' postes à réarbitrer entre '+AGENTS.length+' agents et '+DEST.length+' destinations.';}
 {const el=document.getElementById('g-total-cap'); if(el) el.textContent=TOTAL_CAP;}
 
-/* Solution de référence (heuristique forte : on élague les 2 pires postes de
-   chaque agent puis on comble par valeur décroissante, sous les mêmes règles que
-   le jeu) : [indice_conversion moyen pondéré, indice_panier moyen pondéré, CA
-   généré] par destination, pour l'écran de comparaison de fin de partie. */
+/* Solution de référence (heuristique forte : on élague les 2 pires postes réels de
+   chaque agent, puis on comble par gain marginal décroissant — postes réels valorisés
+   par leur volume observé, postes onboardés par le modèle des 70 opps/mois répartis
+   sur les destinations de l'agent, sous les mêmes règles que le jeu, y compris le
+   bonus de capacité Star) : [indice_conversion moyen pondéré, indice_panier moyen
+   pondéré, CA généré] par destination, pour l'écran de comparaison de fin de partie. */
 const REF_DEST = [
-[1.0578,0.9748,395671],
-[0.813,0.9182,91155],
-[0.8503,0.9972,130121],
-[0.9627,0.999,445581],
-[0.784,1.04,23095],
-[0.9811,1.0195,1729878],
+[1.0454,0.9914,510958],
+[1.0155,1.0285,1430885],
+[1.0352,1.0998,384498],
+[0.9757,1.0617,318157],
+[0.8141,0.9704,241638],
+[0.9563,1.0203,1522154],
+[0.9342,0.9924,363794],
 [0,0,0],
-[0,0,0],
-[1.0028,1.0144,785774],
-[0.963,1.172,14525],
-[1.0189,1.0645,2401861],
+[1.009,0.987,1094230],
+[1.0637,1.05,160509],
+[0.9818,1.0363,2305244],
 [0.963,1.172,10374],
-[1.0097,1.0351,222199],
+[1.0547,1.0492,210640],
 [0.9086,0.9683,89304],
 [0,0,0],
-[1.0738,1.0318,1510195],
-[0,0,0],
+[1.074,0.9772,1497185],
+[1.02,1.0754,753081],
 [0,0,0],
 [0.605,0.908,7750],
-[1.1033,1.1543,847433],
+[0.9747,1.1152,697663],
 [0,0,0],
-[0.9932,0.985,336859],
-[0.9616,1.0594,600987],
-[0.8505,0.944,52405],
-[1.0534,1.0159,883333],
-[1.037,1.068,175854],
-[1.0307,0.9992,420606],
+[0.9987,1.0491,222127],
+[0.9956,1.0141,1055140],
+[0.9487,1.046,455878],
+[1.0037,1.001,439393],
+[1.0317,1.0395,353286],
+[0.9979,0.9929,549503],
 [0,0,0],
-[1.018,1.1258,553315],
-[0.964,0.9711,584621],
-[0.9624,0.9852,222576],
-[0.9473,1.0572,646928],
-[0.9846,1.0041,847278],
-[1.0095,1.049,1667430],
+[0.968,1.1546,475947],
+[1.0616,0.9946,240509],
+[1.1078,1.0582,151767],
+[1.0041,1.029,1796912],
+[0.9466,0.9877,561247],
+[0.9671,1.0405,1505526],
 [1.0164,1.0592,117623]
 ];
 const CA_REF = REF_DEST.reduce((s,r)=>s+r[2],0);
@@ -749,7 +772,7 @@ $('btn-back').onclick=()=>{me=null;asAnimateur=false;openAdmin()};
 $('tab-1').onclick=()=>setPhase(1);
 $('tab-2').onclick=()=>setPhase(2);
 function setPhase(p){
-  st.phase=p; st.sel=null;
+  st.phase=p;
   $('tab-1').style.background = p===1?'var(--accent-soft)':'transparent';
   $('tab-2').style.background = p===2?'var(--accent-soft)':'transparent';
   $('roster-title').textContent = 'Agents';
@@ -835,7 +858,7 @@ function renderPrune(box){
   for(const di of a.pf){
     const d=DEST[di], p=a.pfMap[di];
     const gone = !!st.cut[a.idx][di], canCut = !gone, canBack = gone && r>0;
-    const swing = BASE[a.idx][di]*slotCA(a,d);
+    const swing = BASE[a.idx][di]*heldSlotCA(a,d);
     h+='<div class="dline">'+
       '<div><div class="dname">'+esc(d.nom)+'</div><div class="dmeta">'+chipCat(d.cat)+
         '<span class="num">'+nf.format(p.opps)+' opps réelles</span></div></div>'+
@@ -871,12 +894,19 @@ function renderPlace(box){
     '<h3>'+esc(gameLabel(a))+'</h3><div class="hint num">couverture : '+u+'/'+DEST.length+
     ' &nbsp; '+ob+'/3 onboardings</div></div>'+
     '<p class="hint" style="margin:0 0 10px">Destinations triées par gain pour <b>cet</b> agent. Les deux colonnes '+
-    'chiffrées combinent le calibre de <b>cet agent</b> et le profil de la destination — le CR3 et l\'AOV qu\'il '+
-    'ferait probablement là-bas, pas la moyenne du marché. Au-dessus de la référence marché (21,8 % / 7 690 €) '+
-    'en vert, en dessous en rouge. Sous chaque ligne : le CA que ça rapporterait, et le nombre d\'agents encore '+
-    'possibles à onboarder sur cette destination.</p>';
+    'chiffrées sont la moyenne marché de la destination (tous agents confondus) — au-dessus de la référence '+
+    'globale (21,8 % / 7 690 €) en vert, en dessous en rouge. Le CA sous chaque ligne applique déjà le calibre '+
+    'réel de <b>cet agent</b> à cette moyenne ; pour une destination nouvelle, il répartit aussi son quota '+
+    'd\'environ 70 opps/mois en haute saison entre toutes les destinations qu\'il couvrirait.</p>';
   const now=agentIdxLive(a);
-  const rows=DEST.map(d=>({d,v:slotCA(a,d)})).sort((x,y)=>y.v-x.v);
+  // Valeur projetée : réelle (volume observé) si déjà dans le portefeuille, sinon
+  // estimée par le modèle des 70 opps/mois en supposant qu'on l'ajoute (+1 destination).
+  const previewCA = d=>{
+    if(BASE[a.idx][d.idx]>0) return heldSlotCA(a,d);
+    const cur=st.alloc[a.idx][d.idx]>0;
+    return onbSlotCA(a,d, u+(cur?0:1));
+  };
+  const rows=DEST.map(d=>({d,v:previewCA(d)})).sort((x,y)=>y.v-x.v);
   for(const {d,v} of rows){
     const cur=st.alloc[a.idx][d.idx]>0;
     const taken=AGENTS.reduce((s,x)=>s+st.alloc[x.idx][d.idx],0);
@@ -891,9 +921,9 @@ function renderPlace(box){
       : room<=0 ? 'cette destination est déjà à son maximum de postes'
       : (needsOnb&&ob>=3) ? '3 onboardings atteints' : '';
     const proj = agentIdxLive(a,d);
-    // Combiné calibre agent × profil destination : ce que CET agent ferait probablement
-    // sur CETTE destination — pas la moyenne du marché, pas la moyenne de son portefeuille.
-    const combCr3 = CR3_M*d.ic*a.ic, combAov = AOV_M*d.ip*a.ip;
+    // Moyenne marché de la destination, tous agents confondus — pas encore calibrée
+    // sur cet agent (le calibrage se voit dans le CA estimé sous la ligne).
+    const avgCr3 = CR3_M*d.ic, avgAov = AOV_M*d.ip;
 
     // Impact estimé d'affecter CET agent à CETTE destination
     let impact='<span><b>'+(v>=0?'+ ':'')+nf.format(Math.round(v))+' €</b> si onboardé ici</span>';
@@ -914,8 +944,8 @@ function renderPlace(box){
           :isPf?'':' <span class="chip qmark">nouvelle</span>')+
         '</div><div class="dmeta">'+chipCat(d.cat)+
         '<span class="num">'+taken+'/'+d.slots+' agents déjà couverts</span></div></div>'+
-      '<div class="dnum">'+idxChip(combCr3/CR3_M,pct(combCr3*100))+'</div>'+
-      '<div class="dnum">'+idxChip(combAov/AOV_M,eur(combAov))+'</div>'+
+      '<div class="dnum">'+idxChip(avgCr3/CR3_M,pct(avgCr3*100))+'</div>'+
+      '<div class="dnum">'+idxChip(avgAov/AOV_M,eur(avgAov))+'</div>'+
       '<div class="act">'+
         '<button class="btn sm '+(cur?'':'ghost')+'" data-toggle="'+d.idx+'"'+
           (canAdd||canDrop?'':' disabled')+'>'+(cur?'Retirer':'Onboarder')+'</button>'+
@@ -949,7 +979,7 @@ function renderComparison(){
   const rows=DEST.map((d,k)=>{
     let n=0,c=0,v=0,ca=0;
     for(const a of AGENTS){const s=st.alloc[a.idx][d.idx];
-      if(s){n+=s;c+=s*a.ic;v+=s*a.ip;ca+=s*slotCA(a,d)}}
+      if(s){n+=s;c+=s*a.ic;v+=s*a.ip;ca+=s*seatCA(st.alloc,a,d)}}
     const [rIc,rIp,rCa]=REF_DEST[k];
     return {d,ic:n?c/n:0,ip:n?v/n:0,ca,rIc,rIp,rCa,gap:ca-rCa};
   }).sort((x,y)=>x.gap-y.gap);
