@@ -173,6 +173,7 @@ input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:tra
   <div class="topbar">
     <div class="brand"><h1>Pilotage animateur</h1><span id="names-state">noms réels</span></div>
     <div class="tools">
+      <button class="btn ghost" id="btn-names-global">Révéler les noms aux équipes</button>
       <button class="btn" id="btn-newgroup">Nouvelle équipe</button>
       <button class="btn ghost" id="btn-quit-admin">Quitter</button>
     </div>
@@ -218,7 +219,6 @@ input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:tra
     <div class="brand"><h1 id="g-name">—</h1><span id="g-lead"></span></div>
     <div class="tools">
       <button class="btn ghost sm" id="btn-back" style="display:none">← Pilotage</button>
-      <button class="btn ghost sm" id="btn-names">Afficher les noms</button>
       <button class="btn ghost sm" id="btn-random">Compléter au hasard</button>
       <button class="btn ghost sm" id="btn-reset">Recommencer</button>
       <button class="btn sm" id="btn-finish">Valider la répartition</button>
@@ -512,12 +512,12 @@ let names=null;         // {A01:"…"} — admin seulement
 let me=null;            // groupe joué localement
 let st=null;            // {alloc,retraits,onb,phase,sel}
 let adminSel=null, unsub=null, saveTimer=null, asAnimateur=false;
-let gameNamesOn=false;  // bouton "Afficher les noms" côté écran de jeu — indépendant du pilotage
+let namesGlobalOn=false; // réglage partagé, imposé par l'animateur à toutes les équipes
 
 const $ = id=>document.getElementById(id);
 const show = id=>{for(const s of document.querySelectorAll('.screen'))s.classList.remove('on');$(id).classList.add('on')};
 const agentLabel = a=> (names&&names[a.code]) ? names[a.code] : a.code;
-const gameLabel = a=> gameNamesOn ? (LOCAL_NAMES[a.code]||a.code) : a.code;
+const gameLabel = a=> namesGlobalOn ? (LOCAL_NAMES[a.code]||a.code) : a.code;
 
 function freshState(){
   const s={alloc:decAlloc(encAlloc(BASE)),retraits:{},onb:{},cut:{},phase:1,sel:null};
@@ -536,7 +536,7 @@ function localSave(){try{localStorage.setItem('atq4',JSON.stringify(groups))}cat
 function localLoad(){try{groups=JSON.parse(localStorage.getItem('atq4')||'[]')}catch(e){groups=[]}}
 
 async function pushGroup(g){
-  const body={id:g.id,name:g.name,lead:g.lead,allocStr:g.allocStr||'',retraits:g.retraits||'',
+  const body={kind:'group',id:g.id,name:g.name,lead:g.lead,allocStr:g.allocStr||'',retraits:g.retraits||'',
     onb:g.onb||'',cut:g.cut||'',ca:g.ca||BASE_CA,score:g.score===null||g.score===undefined?'':g.score,
     done:!!g.done,ts:Date.now(),dataVersion:DATA_VERSION};
   const i=groups.findIndex(x=>x.id===g.id);
@@ -549,6 +549,20 @@ async function pushGroup(g){
   }catch(e){
     const msg='Synchronisation impossible — la partie reste sur ce poste.';
     banner('admin-banner',msg); banner('game-banner',msg);
+  }
+}
+
+/* Réglage global, imposé par l'animateur à toutes les équipes en direct
+   (ex. révéler les noms réels en fin d'atelier). */
+async function pushSettings(namesOn){
+  namesGlobalOn=namesOn;
+  if($('s-game').classList.contains('on'))render();
+  if(!API_URL || API_URL.indexOf('PASTE_')===0)return;
+  try{
+    await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({kind:'settings',namesOn})});
+  }catch(e){
+    banner('admin-banner','Réglage non synchronisé — repassez par le pilotage pour réessayer.');
   }
 }
 
@@ -581,12 +595,16 @@ async function fetchGroups(){
   try{
     const res=await fetch(API_URL,{method:'GET'});
     const data=await res.json();
-    groups=data.map(g=>({...g,score:(g.score===''||g.score===null||g.score===undefined)?null:g.score}));
+    groups=data.groups.map(g=>({...g,score:(g.score===''||g.score===null||g.score===undefined)?null:g.score}));
+    const namesOnFresh=!!(data.settings&&data.settings.namesOn);
+    const namesChanged=namesOnFresh!==namesGlobalOn;
+    namesGlobalOn=namesOnFresh;
     apiOk=true;
     localSave();
     renderGatePicker();
     tryJoinFromUrl();
     if($('s-admin').classList.contains('on'))renderAdmin();
+    if(namesChanged&&$('s-game').classList.contains('on'))render();
     if(me){const fresh=groups.find(g=>g.id===me.id);if(fresh){me.name=fresh.name;me.lead=fresh.lead}}
   }catch(e){
     if(apiOk)banner('admin-banner','Synchronisation interrompue — les équipes ne remontent plus en direct.');
@@ -637,6 +655,7 @@ async function openAdmin(){
   renderAdmin();
 }
 $('btn-quit-admin').onclick=()=>{show('s-gate')};
+$('btn-names-global').onclick=()=>{ pushSettings(!namesGlobalOn); renderAdmin(); };
 
 $('btn-newgroup').onclick=()=>{$('ng-name').focus()};
 
@@ -657,6 +676,7 @@ for(const el of [$('ng-name'),$('ng-lead')])
   el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addGroup()}});
 
 function renderAdmin(){
+  $('btn-names-global').textContent = namesGlobalOn ? 'Masquer les noms aux équipes' : 'Révéler les noms aux équipes';
   $('ad-base').textContent=mEur(BASE_CA);
   $('ad-gisement').textContent=eur(GISEMENT);
   $('ad-count').textContent=groups.length;
@@ -1021,11 +1041,6 @@ $('btn-finish').onclick=()=>{
 };
 $('btn-reset').onclick=()=>{
   st=freshState(); me.done=false; $('g-score').innerHTML=''; setPhase(1); queueSave();
-};
-$('btn-names').onclick=()=>{
-  gameNamesOn=!gameNamesOn;
-  $('btn-names').textContent = gameNamesOn ? 'Masquer les noms' : 'Afficher les noms';
-  render();
 };
 $('btn-random').onclick=()=>{
   const roomOf=d=>d.slots-AGENTS.reduce((s,x)=>s+st.alloc[x.idx][d.idx],0);
