@@ -274,7 +274,7 @@ const ADMIN_CODE = 'atelier2024';
 /* Change ce numéro à chaque fois que le modèle de données change (agents/destinations/
    unité de capacité). Une partie sauvegardée sous un autre numéro est ignorée au
    chargement plutôt que de réinjecter des valeurs incompatibles. */
-const DATA_VERSION = 'postes-v5-onboarding-opps';
+const DATA_VERSION = 'postes-v6-revenu-reel';
 const LOCAL_NAMES = {"A01":"Alexandra Mennechez","A02":"Alexandre Paprocki","A03":"Alice Saint-Jean","A04":"Amandine Godin","A05":"Antoine Revardeau","A06":"Aurelie Guesnet","A07":"Bertrand Cazabat","A08":"Camille Lecomte","A10":"Charline Blas","A11":"Charline Verdeaux","A12":"Charlotte Garrido","A13":"Chloé Solanki","A14":"Claire Henry","A15":"Claire Lardenois","A16":"Clement Thonneau","A17":"Constant Le Dantec","A18":"Edwige Clad","A19":"Elise Francois","A20":"Ella Thevenet","A21":"Eloïse Lebert","A22":"Emilie Belguise","A23":"Emy Chomon","A24":"Fabienne Pottelain","A25":"Fanny Mangin","A26":"Fiona Tandar","A27":"Guillaume Dupont","A28":"Helene Ristic","A29":"Joumala ElAlaoui","A30":"Juliette Cazes","A31":"Lauren Lebreton","A32":"Laurine Ghis","A34":"Line Desmazures","A35":"Lucie Collado","A36":"Malek Adjroud","A37":"Marceau Cattin","A38":"Margot Bonnet","A39":"Marine Hecquard","A40":"Marion Hucbourg Hernandez","A41":"Marion-Ambroisine QUINARD","A42":"Melissa Braun","A43":"Mila Gascoin","A44":"Oceane Sabeur","A45":"Pauline Preynat","A46":"Philippe Tkatchouk","A47":"Samantha Philippon-joubert","A48":"Scarlett Vis","A49":"Thibaut Brachet","A50":"Thomas Guibert","A51":"Valerie Aleksandrowicz","A52":"Victoria Nouchi","A53":"Yann Magueur","A54":"Zoe Morales"};
 
 /* [nom, opps_q4_reels, postes_besoin, categorie, indice_conversion, indice_panier] — postes_besoin
@@ -315,8 +315,7 @@ const DEST = [
 ["Thailand",712,23,"Volume Driver",1.004,0.712],
 ["United States",903,27,"Volume Driver",1.224,0.849],
 ["Vietnam",171,12,"Question Mark",0.946,0.944]
-].map((r,i)=>({idx:i,nom:r[0],opps:r[1],slots:r[2],cat:r[3],ic:r[4],ip:r[5],
-  oppsPerSeat:r[1]/r[2], bk:Math.round(r[1]*CR3_M*r[4])}));
+].map((r,i)=>({idx:i,nom:r[0],opps:r[1],slots:r[2],cat:r[3],ic:r[4],ip:r[5]}));
 
 /* [code, indice_conversion, indice_panier, slots, portefeuille[]] — depuis donnees_jeu.json
    portefeuille row : [dest, slots_depart, onboarde, opps_reelles, sa_conversion, conversion_marche, son_panier, panier_marche] */
@@ -399,16 +398,16 @@ function decOnb(s){const o={};for(const a of AGENTS)o[a.idx]={};
    Un poste = un agent onboardé sur une destination (pas de notion de quantité).
    Deux façons de valoriser un poste, selon que la destination fait partie ou non
    du portefeuille réel de départ de l'agent :
-   - poste réel (déjà détenu aujourd'hui) : on garde sa part du volume réel observé
-     sur cette destination (opps réelles ÷ nombre de postes qu'elle supporte) — c'est
-     une donnée observée, pas une estimation.
+   - poste réel (déjà détenu aujourd'hui) : le CA réel observé sur ce trimestre —
+     ses opportunités réelles × sa conversion réelle × son panier réel sur CETTE
+     destination précise. Ce n'est pas un modèle, c'est le chiffre déjà arrivé.
    - poste onboardé (nouveau, ajouté en phase 2) : pas d'historique, donc on estime —
      en haute saison un agent reçoit environ 70 opps/mois, réparties à parts égales
      entre toutes les destinations qu'il couvre alors (plus il en a, moins chacune
      en reçoit). Le CR3 et l'AOV utilisés sont ceux de CET agent sur CETTE
      destination (son indice appliqué à la moyenne marché de la destination). */
 const AGENT_QUARTER_OPPS = 70*3; // 70 opps/mois en haute saison, sur un trimestre
-const heldSlotCA = (a,d)=> CR3_M*d.ic*a.ic * AOV_M*d.ip*a.ip * d.oppsPerSeat;
+const heldSlotCA = (a,d)=>{ const p=a.pfMap[d.idx]; return p ? p.opps*p.saConv*p.saPanier : 0; };
 const onbSlotCA = (a,d,destCount)=> CR3_M*d.ic*a.ic * AOV_M*d.ip*a.ip * (AGENT_QUARTER_OPPS/Math.max(destCount,1));
 const used = (al,ai)=>{let n=0;for(const d of DEST)n+=al[ai][d.idx];return n};
 const seatCA = (al,a,d)=> BASE[a.idx][d.idx]>0 ? heldSlotCA(a,d) : onbSlotCA(a,d,used(al,a.idx));
@@ -442,47 +441,48 @@ const TOTAL_CAP = AGENTS.reduce((s,a)=>s+a.slots,0);
 {const el=document.getElementById('g-total-cap'); if(el) el.textContent=TOTAL_CAP;}
 
 /* Solution de référence (heuristique forte : on élague les 2 pires postes réels de
-   chaque agent, puis on comble par gain marginal décroissant — postes réels valorisés
-   par leur volume observé, postes onboardés par le modèle des 70 opps/mois répartis
-   sur les destinations de l'agent, sous les mêmes règles que le jeu, y compris le
-   bonus de capacité Star) : [indice_conversion moyen pondéré, indice_panier moyen
-   pondéré, CA généré] par destination, pour l'écran de comparaison de fin de partie. */
+   chaque agent — par CA réel observé, pas par indice — puis on comble par gain
+   marginal décroissant : postes réels valorisés à leur CA réel observé, postes
+   onboardés par le modèle des 70 opps/mois répartis sur les destinations de
+   l'agent, sous les mêmes règles que le jeu, y compris le bonus de capacité Star) :
+   [indice_conversion moyen pondéré, indice_panier moyen pondéré, CA généré] par
+   destination, pour l'écran de comparaison de fin de partie. */
 const REF_DEST = [
-[1.0454,0.9914,510958],
-[1.0155,1.0285,1430885],
-[1.0352,1.0998,384498],
-[0.9757,1.0617,318157],
-[0.8141,0.9704,241638],
-[0.9563,1.0203,1522154],
-[0.9342,0.9924,363794],
-[0,0,0],
-[1.009,0.987,1094230],
-[1.0637,1.05,160509],
-[0.9818,1.0363,2305244],
-[0.963,1.172,10374],
-[1.0547,1.0492,210640],
-[0.9086,0.9683,89304],
-[0,0,0],
-[1.074,0.9772,1497185],
-[1.02,1.0754,753081],
-[0,0,0],
-[0.605,0.908,7750],
-[0.9747,1.1152,697663],
-[0,0,0],
-[0.9987,1.0491,222127],
-[0.9956,1.0141,1055140],
-[0.9487,1.046,455878],
-[1.0037,1.001,439393],
-[1.0317,1.0395,353286],
-[0.9979,0.9929,549503],
-[0,0,0],
-[0.968,1.1546,475947],
-[1.0616,0.9946,240509],
-[1.1078,1.0582,151767],
-[1.0041,1.029,1796912],
-[0.9466,0.9877,561247],
-[0.9671,1.0405,1505526],
-[1.0164,1.0592,117623]
+[1.0238,0.9685,1315276],
+[0.9721,1.0889,1498841],
+[0.9563,0.9958,559758],
+[0.9376,1.0871,759709],
+[1.0827,1.16,75654],
+[0.9754,1.0076,1875090],
+[0.9418,1.0046,145976],
+[1.1467,1.029,105482],
+[0.949,0.9844,1247483],
+[1.0187,1.0377,181452],
+[1.0536,1.0489,2478231],
+[1.0448,0.9494,422852],
+[1.0348,1.0455,844562],
+[0.9472,1.018,308151],
+[0.943,1.0085,144941],
+[1.0471,0.9929,2362392],
+[0.9508,1.1162,694962],
+[0.605,0.908,0],
+[0.8843,0.9807,49846],
+[1.03,1.0166,597134],
+[0.9315,1.079,57943],
+[0.9659,1.0611,414140],
+[0.9383,1.0153,1438061],
+[0.9669,1.0163,489664],
+[1.0075,0.9866,961687],
+[1.0465,1.047,790013],
+[0.9664,0.9937,711664],
+[0.7535,1.0145,32713],
+[0.9815,1.149,510551],
+[1.0553,1.0304,924112],
+[1.0764,0.9812,371127],
+[1.0085,1.0171,2789843],
+[0.9383,0.9714,1062085],
+[0.994,1.0467,2103169],
+[1.041,1.044,331317]
 ];
 const CA_REF = REF_DEST.reduce((s,r)=>s+r[2],0);
 const GISEMENT = CA_REF-BASE_CA;
@@ -913,7 +913,8 @@ function renderPrune(box){
     'deux colonnes chiffrées comparent <b>cet agent</b> au marché sur chaque destination — sa conversion réelle '+
     'puis son panier réel, tous deux du dernier trimestre. Au-dessus de 1, l\'agent fait mieux que le marché. '+
     '« n/a » = pas de référence marché sur cette destination ; un nombre d\'opportunités réelles très faible '+
-    'rend le chiffre peu fiable.</p>';
+    'rend le chiffre peu fiable. Le montant sous chaque ligne est le CA réel déjà généré par cet agent sur '+
+    'cette destination précise (pas une estimation) — c\'est ce qui disparaît si vous retirez la destination.</p>';
 
   for(const di of a.pf){
     const d=DEST[di], p=a.pfMap[di];
