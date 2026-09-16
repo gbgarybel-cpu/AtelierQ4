@@ -1,0 +1,1030 @@
+<title>Atelier Répartition Q4</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#E8ECEF; --surface:#FFFFFF; --raised:#F4F6F8;
+  --ink:#0F1720; --ink-2:#3D4C59; --ink-3:#6B7C8A;
+  --line:#D2DAE1; --line-2:#BCC7D0;
+  --accent:#0D6E6B; --accent-soft:#D6E9E8;
+  --gain:#157F4F; --gain-soft:#DCEFE4;
+  --loss:#B03A30; --loss-soft:#F6DFDC;
+  --warn:#8A6510; --warn-soft:#F5E8CD;
+  --star:#8A6510; --driver:#2A4A7B; --dog:#8C3A2E; --qmark:#5A6570;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#080D13; --surface:#141C25; --raised:#1C2630;
+    --ink:#E8EDF2; --ink-2:#A8B6C2; --ink-3:#7A8896;
+    --line:#2A3742; --line-2:#3A4A57;
+    --accent:#3FB5B0; --accent-soft:#123331;
+    --gain:#4FC98A; --gain-soft:#0F2E20;
+    --loss:#E8776B; --loss-soft:#331613;
+    --warn:#D7A53F; --warn-soft:#2E2413;
+    --star:#D7A53F; --driver:#7FA8DC; --dog:#E8897A; --qmark:#93A1AD;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#080D13; --surface:#141C25; --raised:#1C2630;
+  --ink:#E8EDF2; --ink-2:#A8B6C2; --ink-3:#7A8896;
+  --line:#2A3742; --line-2:#3A4A57;
+  --accent:#3FB5B0; --accent-soft:#123331;
+  --gain:#4FC98A; --gain-soft:#0F2E20;
+  --loss:#E8776B; --loss-soft:#331613;
+  --warn:#D7A53F; --warn-soft:#2E2413;
+  --star:#D7A53F; --driver:#7FA8DC; --dog:#E8897A; --qmark:#93A1AD;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:Archivo,system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.5}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:600;letter-spacing:-0.01em}
+h1{font-size:19px}
+h2{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.09em;color:var(--ink-3)}
+h3{font-size:15px}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+a{color:var(--accent)}
+
+.shell{max-width:1460px;margin:0 auto;padding:0 22px 64px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:16px 0 14px;border-bottom:1px solid var(--line-2);margin-bottom:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:11px}
+.brand span{font-size:11px;color:var(--ink-3);letter-spacing:0.05em;text-transform:uppercase}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.btn{padding:7px 14px;border-radius:3px;background:var(--accent);color:#fff;font-weight:600;font-size:13px}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--line-2)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent);filter:none}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn[disabled]{opacity:.32;cursor:not-allowed;filter:none}
+
+/* instrument bar — the three numbers that matter, always visible */
+.instr{display:flex;gap:0;background:var(--surface);border:1px solid var(--line);
+  border-radius:4px;overflow-x:auto;margin-bottom:16px}
+.gauge{padding:11px 18px;border-right:1px solid var(--line);flex:0 0 auto;min-width:132px}
+.gauge:last-child{border-right:0}
+.gauge .lab{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-3);
+  display:block;margin-bottom:3px}
+.gauge .val{font-size:19px;font-weight:600;display:block}
+.gauge .sub{font-size:11px;font-weight:500}
+.up{color:var(--gain)} .dn{color:var(--loss)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:16px}
+.card + .card{margin-top:14px}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.07em;
+  color:var(--ink-3);font-weight:600;padding:0 10px 8px;border-bottom:1px solid var(--line-2)}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+.rows tbody tr{cursor:pointer}
+.rows tbody tr:hover{background:var(--raised)}
+.rows tbody tr[aria-selected="true"]{background:var(--accent-soft)}
+.scroll-x{overflow-x:auto}
+
+.chip{display:inline-block;padding:2px 7px;border-radius:2px;font-size:10px;font-weight:600;
+  letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap}
+.chip.star{background:var(--warn-soft);color:var(--star)}
+.chip.driver{background:var(--accent-soft);color:var(--driver)}
+.chip.dog{background:var(--loss-soft);color:var(--dog)}
+.chip.qmark{background:var(--raised);color:var(--qmark);border:1px solid var(--line)}
+.chip.live{background:var(--gain-soft);color:var(--gain)}
+.chip.idle{background:var(--raised);color:var(--ink-3);border:1px solid var(--line)}
+.chip.done{background:var(--accent-soft);color:var(--accent)}
+
+.idx{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-size:12px;font-weight:600;padding:1px 6px;border-radius:2px;white-space:nowrap}
+.idx.up{background:var(--gain-soft)} .idx.dn{background:var(--loss-soft)}
+
+/* game layout */
+.split{display:grid;grid-template-columns:246px minmax(0,1fr);gap:14px}
+@media(max-width:880px){.split{grid-template-columns:1fr}}
+.roster{background:var(--surface);border:1px solid var(--line);border-radius:4px;
+  max-height:70vh;overflow-y:auto}
+.arow{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;
+  padding:9px 12px;border-bottom:1px solid var(--line);text-align:left}
+.arow:last-child{border-bottom:0}
+.arow:hover{background:var(--raised)}
+.arow[aria-current="true"]{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.arow .code{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:13px}
+.arow .meta{font-size:11px;color:var(--ink-3)}
+
+/* destination line — the repeated object */
+.dline{display:grid;grid-template-columns:minmax(0,1fr) 60px 60px 104px;gap:12px;
+  align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.dline:last-child{border-bottom:0}
+@media(max-width:620px){.dline{grid-template-columns:minmax(0,1fr) 52px 52px;row-gap:8px}
+  .dline .act{grid-column:1/-1}}
+.dname{font-weight:600;font-size:13.5px;margin-bottom:2px}
+.dmeta{font-size:11px;color:var(--ink-3);display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.dnum{text-align:center}
+.act{text-align:right}
+.act .btn{width:100%}
+.dimpact{grid-column:1/-1;display:flex;gap:16px;flex-wrap:wrap;align-items:baseline;
+  font-size:11px;color:var(--ink-3);padding:7px 0 1px;border-top:1px dashed var(--line)}
+.dimpact b{font-weight:600;color:var(--ink-2)}
+
+.hint{font-size:12px;color:var(--ink-3)}
+.empty{padding:28px 14px;text-align:center;color:var(--ink-3);font-size:13px}
+
+/* gate */
+.gate{max-width:520px;margin:9vh auto 0;padding:0 22px}
+.gate .card{padding:26px}
+.lede{color:var(--ink-2);font-size:14px;margin:8px 0 22px}
+.pick{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.pick button{display:flex;justify-content:space-between;align-items:center;
+  padding:12px 14px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);
+  text-align:left;font-weight:600}
+.pick button:hover{border-color:var(--accent);color:var(--accent)}
+input{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line-2);border-radius:3px;
+  background:var(--surface);color:var(--ink);margin-bottom:9px}
+input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+
+.banner{padding:9px 13px;border-radius:3px;font-size:12px;margin-bottom:14px;
+  background:var(--warn-soft);color:var(--warn);border:1px solid currentColor}
+.screen{display:none} .screen.on{display:block}
+.scorebox{text-align:center;padding:22px;border:1px solid var(--accent);border-radius:4px;
+  background:var(--accent-soft);margin-top:14px}
+.scorebox .big{font-size:46px;font-weight:700;line-height:1.1;
+  font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<!-- ─────────── GATE ─────────── -->
+<div class="screen on gate" id="s-gate">
+  <div class="card">
+    <h1>Atelier Répartition Q4</h1>
+    <p class="lede" id="gate-lede">Répartition des postes entre agents et destinations.</p>
+    <h2 style="margin-bottom:4px">Rejoindre une équipe</h2>
+    <p class="hint" style="margin:0 0 9px">Cliquez sur le nom de votre équipe. Votre partie se retrouve
+      automatiquement si vous rechargez la page.</p>
+    <div class="pick" id="gate-groups"><div class="hint">Chargement…</div></div>
+    <div style="border-top:1px solid var(--line);padding-top:16px">
+      <h2 style="margin-bottom:9px">Animateur</h2>
+      <input type="password" id="pwd" placeholder="Code animateur" autocomplete="off">
+      <button class="btn" style="width:100%" id="btn-login">Ouvrir le pilotage</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────── ADMIN ─────────── -->
+<div class="screen shell" id="s-admin">
+  <div class="topbar">
+    <div class="brand"><h1>Pilotage animateur</h1><span id="names-state">noms réels</span></div>
+    <div class="tools">
+      <button class="btn" id="btn-newgroup">Nouvelle équipe</button>
+      <button class="btn ghost" id="btn-quit-admin">Quitter</button>
+    </div>
+  </div>
+  <div id="admin-banner"></div>
+  <p class="hint" style="margin:-4px 0 14px">Toutes les équipes utilisent <b>ce même lien</b> — pas de lien par équipe.
+    Chacune ouvre la page et clique sur son nom. « Ouvrir » vous fait entrer dans leur espace de travail.</p>
+
+  <div class="instr">
+    <div class="gauge"><span class="lab">CA de départ</span><span class="val num" id="ad-base">—</span>
+      <span class="sub hint">identique pour tous</span></div>
+    <div class="gauge"><span class="lab">Gisement</span><span class="val num up" id="ad-gisement">—</span>
+      <span class="sub hint">= score 100 %</span></div>
+    <div class="gauge"><span class="lab">Équipes</span><span class="val num" id="ad-count">0</span></div>
+    <div class="gauge"><span class="lab">Mise à jour</span><span class="val num" id="ad-stamp" style="font-size:15px">—</span><span class="sub hint">en direct</span></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px">
+      <h2 style="margin:0">Classement — par CA généré</h2>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <input id="ng-name" placeholder="Nom de l'équipe" style="width:168px;margin:0" autocomplete="off">
+        <input id="ng-lead" placeholder="Team lead" style="width:148px;margin:0" autocomplete="off">
+        <button class="btn sm" id="ng-add" type="button">Ajouter</button>
+      </div>
+    </div>
+    <div class="scroll-x"><table class="rows">
+      <thead><tr><th>#</th><th>Équipe</th><th>Team lead</th><th>CA</th><th>Δ vs départ</th>
+        <th>Score</th><th>Arbitrages</th><th>Postes</th><th>État</th><th>Espace</th></tr></thead>
+      <tbody id="ad-board"></tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:11px">Détail — qui a touché à quoi</h2>
+    <div id="ad-detail"></div>
+  </div>
+</div>
+
+<!-- ─────────── GAME ─────────── -->
+<div class="screen shell" id="s-game">
+  <div class="topbar">
+    <div class="brand"><h1 id="g-name">—</h1><span id="g-lead"></span></div>
+    <div class="tools">
+      <button class="btn ghost sm" id="btn-back" style="display:none">← Pilotage</button>
+      <button class="btn ghost sm" id="btn-names">Afficher les noms</button>
+      <button class="btn ghost sm" id="btn-random">Compléter au hasard</button>
+      <button class="btn ghost sm" id="btn-reset">Recommencer</button>
+      <button class="btn sm" id="btn-finish">Valider la répartition</button>
+    </div>
+  </div>
+  <div id="game-banner"></div>
+
+  <div class="instr">
+    <div class="gauge"><span class="lab">CR3 marché</span><span class="val num" id="g-cr3">—</span>
+      <span class="sub hint">réf. 21,8 %</span></div>
+    <div class="gauge"><span class="lab">AOV marché</span><span class="val num" id="g-aov">—</span>
+      <span class="sub hint">réf. 7 690 €</span></div>
+    <div class="gauge"><span class="lab">CA projeté</span><span class="val num" id="g-ca">—</span>
+      <span class="sub num" id="g-delta">—</span></div>
+    <div class="gauge"><span class="lab">Répartition</span><span class="val num" id="g-slots">—</span>
+      <span class="sub hint">sur <span id="g-total-cap">—</span></span></div>
+    <div class="gauge" style="background:var(--raised)"><span class="lab">Agent</span>
+      <span class="val num" id="g-agent">—</span><span class="sub hint" id="g-agentsub">aucun</span></div>
+    <div class="gauge" style="background:var(--raised)"><span class="lab">CR3 agent</span>
+      <span class="val num" id="g-acr3">—</span><span class="sub hint">en temps réel</span></div>
+    <div class="gauge" style="background:var(--raised);border-right:0"><span class="lab">AOV agent</span>
+      <span class="val num" id="g-aaov">—</span><span class="sub hint">en temps réel</span></div>
+  </div>
+
+  <div class="instr" style="padding:0">
+    <button class="gauge" id="tab-1" style="flex:1;text-align:left;min-width:0">
+      <span class="lab">Phase 1</span><span class="val" style="font-size:14px">Élaguer — garder ou retirer chaque destination</span></button>
+    <button class="gauge" id="tab-2" style="flex:1;text-align:left;min-width:0;border-right:0">
+      <span class="lab">Phase 2</span><span class="val" style="font-size:14px">Onboarder — replacer la capacité libérée</span></button>
+  </div>
+
+  <div class="split">
+    <div>
+      <h2 style="margin-bottom:7px" id="roster-title">Agents</h2>
+      <div class="roster" id="g-roster"></div>
+    </div>
+    <div class="card" id="g-panel"></div>
+  </div>
+
+  <div id="g-score"></div>
+</div>
+
+<script>
+/* ═══════════ DONNÉES ═══════════
+   Modèle du brief : CA = CR3(agent,dest) × AOV(agent,dest) × opps du slot
+   CR3(a,d) = CR3_marché × indice_conversion(d) × indice_conversion(a)
+   AOV(a,d) = AOV_marché × indice_panier(d)     × indice_panier(a)
+   Les agents sont identifiés par code. Les noms réels vivent dans la base,
+   sur un chemin que seuls les niveaux "éditeur" peuvent lire. */
+const CR3_M = 0.2182, AOV_M = 7690;
+const ADMIN_CODE = 'atelier2024';
+/* Change ce numéro à chaque fois que le modèle de données change (agents/destinations/
+   unité de capacité). Une partie sauvegardée sous un autre numéro est ignorée au
+   chargement plutôt que de réinjecter des valeurs incompatibles. */
+const DATA_VERSION = 'postes-v4-besoin-q1';
+const LOCAL_NAMES = {"A01":"Alexandra Mennechez","A02":"Alexandre Paprocki","A03":"Alice Saint-Jean","A04":"Amandine Godin","A05":"Antoine Revardeau","A06":"Aurelie Guesnet","A07":"Bertrand Cazabat","A08":"Camille Lecomte","A10":"Charline Blas","A11":"Charline Verdeaux","A12":"Charlotte Garrido","A13":"Chloé Solanki","A14":"Claire Henry","A15":"Claire Lardenois","A16":"Clement Thonneau","A17":"Constant Le Dantec","A18":"Edwige Clad","A19":"Elise Francois","A20":"Ella Thevenet","A21":"Eloïse Lebert","A22":"Emilie Belguise","A23":"Emy Chomon","A24":"Fabienne Pottelain","A25":"Fanny Mangin","A26":"Fiona Tandar","A27":"Guillaume Dupont","A28":"Helene Ristic","A29":"Joumala ElAlaoui","A30":"Juliette Cazes","A31":"Lauren Lebreton","A32":"Laurine Ghis","A34":"Line Desmazures","A35":"Lucie Collado","A36":"Malek Adjroud","A37":"Marceau Cattin","A38":"Margot Bonnet","A39":"Marine Hecquard","A40":"Marion Hucbourg Hernandez","A41":"Marion-Ambroisine QUINARD","A42":"Melissa Braun","A43":"Mila Gascoin","A44":"Oceane Sabeur","A45":"Pauline Preynat","A46":"Philippe Tkatchouk","A47":"Samantha Philippon-joubert","A48":"Scarlett Vis","A49":"Thibaut Brachet","A50":"Thomas Guibert","A51":"Valerie Aleksandrowicz","A52":"Victoria Nouchi","A53":"Yann Magueur","A54":"Zoe Morales"};
+
+/* [nom, opps_q4_reels, postes_besoin, categorie, indice_conversion, indice_panier] — postes_besoin
+   = nombre d'agents réellement onboardés dessus aujourd'hui (modèle par poste, pas par volume). */
+const DEST = [
+["Argentina",181,11,"Star",0.984,1.289],
+["Australia",117,14,"Question Mark",1.081,1.602],
+["Botswana",54,6,"Question Mark",1.295,1.306],
+["Brazil",297,18,"Question Mark",0.949,0.989],
+["Cambodia",54,7,"Question Mark",1.152,0.923],
+["Canada",1056,37,"Volume Driver",1.17,0.837],
+["Chile",30,9,"Question Mark",1.214,0.888],
+["Colombia",43,7,"Dog",0.282,0.851],
+["Costa Rica",426,26,"Star",1.135,0.962],
+["Ecuador",18,3,"Dog",1.102,1.16],
+["French Polynesia",890,20,"Star",0.867,1.715],
+["Greece",127,12,"Dog",1.009,0.513],
+["Iceland",676,32,"Star",0.778,0.763],
+["Indonesia",206,19,"Volume Driver",1.194,0.674],
+["Italy",96,11,"Dog",0.763,0.563],
+["Japan",563,21,"Volume Driver",1.182,1.22],
+["Kenya",39,8,"Question Mark",1.105,1.362],
+["Laos",18,5,"Question Mark",0.861,1],
+["Malaysia",66,6,"Dog",1.219,0.627],
+["Maldives",332,10,"Question Mark",1.145,1.055],
+["Mauritius",102,8,"Dog",0.631,0.998],
+["Mexico",221,13,"Volume Driver",1.326,0.705],
+["Namibia",278,17,"Star",0.964,1.302],
+["New Zealand",84,10,"Question Mark",1.024,1.129],
+["Norway",1115,17,"Volume Driver",0.638,0.694],
+["Oman",50,4,null,1.496,1.27],
+["Peru",225,12,"Star",0.948,1.145],
+["Portugal",38,7,"Dog",1.049,0.565],
+["Seychelles",321,8,"Question Mark",0.986,0.922],
+["South Africa",461,22,"Star",0.843,0.968],
+["Sri Lanka",318,17,"Question Mark",0.873,0.927],
+["Tanzania",220,19,"Star",1.068,1.649],
+["Thailand",712,23,"Volume Driver",1.004,0.712],
+["United States",903,27,"Volume Driver",1.224,0.849],
+["Vietnam",171,12,"Question Mark",0.946,0.944]
+].map((r,i)=>({idx:i,nom:r[0],opps:r[1],slots:r[2],cat:r[3],ic:r[4],ip:r[5],
+  oppsPerSeat:r[1]/r[2], bk:Math.round(r[1]*CR3_M*r[4])}));
+
+/* [code, indice_conversion, indice_panier, slots, portefeuille[]] — depuis donnees_jeu.json
+   portefeuille row : [dest, slots_depart, onboarde, opps_reelles, sa_conversion, conversion_marche, son_panier, panier_marche] */
+const AGENTS_RAW = [
+["A01",1.22,0.956,6,[[1,1,1,35,0.1429,0.1839,10580.87,11655],[3,1,1,109,0.2202,0.178,5568.81,7335],[7,1,0,0,0.0,0.125,0,5945],[8,1,1,55,0.2545,0.2414,8434.42,6998],[21,1,1,86,0.2791,0.2483,5726.67,6575],[26,1,1,79,0.2532,0.2848,6939.24,7813]]],
+["A02",0.935,0.928,5,[[5,1,1,53,0.3208,0.2688,4685.67,5752],[10,1,1,38,0.0263,0.1765,10131.0,12576],[15,1,1,51,0.2157,0.224,8177.92,9473],[32,1,1,81,0.2469,0.2468,5012.79,5877],[33,1,1,59,0.3051,0.2712,5665.55,6895]]],
+["A03",0.82,0.852,5,[[1,1,1,36,0.1111,0.1839,10691.75,11655],[5,1,1,12,0.3333,0.2688,6380.53,5752],[12,1,1,42,0.2381,0.1801,7927.95,6315],[22,1,1,36,0.2222,0.1925,7588.6,10698],[32,1,1,112,0.2411,0.2468,6771.16,5877]]],
+["A04",1.126,0.988,7,[[5,1,1,32,0.375,0.2688,5534.47,5752],[8,1,1,24,0.1667,0.2414,5263.11,6998],[11,1,1,32,0.2812,0.3015,4005.22,4719],[12,1,1,26,0.1538,0.1801,2937.32,6315],[23,1,1,18,0.2778,0.1818,7762.04,8569],[25,1,0,0,0.0,0.0,0,0],[30,1,1,5,0.4,0.2647,9617.5,7559]]],
+["A05",0.989,0.844,5,[[1,1,1,20,0.3,0.1839,6413.5,11655],[5,1,1,25,0.32,0.2688,8666.25,5752],[20,1,1,45,0.2667,0.2167,5306.5,6699],[31,1,1,39,0.2308,0.1673,13320.0,13773],[32,1,1,51,0.2745,0.2468,5853.64,5877]]],
+["A06",0.973,1.116,9,[[5,1,1,28,0.4286,0.2688,6515.22,5752],[8,1,1,15,0.2667,0.2414,2127.75,6998],[10,1,1,29,0.069,0.1765,33676.0,12576],[12,1,1,17,0.2941,0.1801,6938.12,6315],[15,1,1,10,0.4,0.224,4885.75,9473],[21,1,1,26,0.1538,0.2483,4465.5,6575],[24,1,1,14,0.1429,0.1848,8188.98,5613],[32,1,1,44,0.1818,0.2468,7494.84,5877],[33,1,1,71,0.3803,0.2712,5377.65,6895]]],
+["A07",0.945,1.036,9,[[2,1,1,30,0.1333,0.1778,20433.31,13620],[12,1,1,33,0.1515,0.1801,6305.38,6315],[15,1,1,9,0.2222,0.224,23433.86,9473],[16,1,1,28,0.25,0.1429,14191.19,14515],[22,1,1,45,0.2444,0.1925,9519.09,10698],[28,1,1,64,0.1094,0.1484,5448.64,8409],[29,1,1,43,0.2326,0.2267,5648.49,8704],[31,1,1,16,0.0625,0.1673,11320.0,13773],[33,1,1,81,0.2469,0.2712,6460.94,6895]]],
+["A08",1.229,0.908,8,[[4,1,1,8,0.375,0.1765,8997.68,10215],[5,1,1,8,0.375,0.2688,5805.49,5752],[10,1,1,56,0.2679,0.1765,15733.58,12576],[12,1,1,32,0.25,0.1801,4573.13,6315],[18,1,1,27,0.2222,0.2258,5319.3,3788],[28,1,1,70,0.2714,0.1484,7214.9,8409],[29,1,1,39,0.2051,0.2267,6939.28,8704],[34,1,1,34,0.1765,0.2119,5959.59,6944]]],
+["A10",1.066,0.856,7,[[0,1,1,28,0.2143,0.25,30959.1,12902],[6,1,1,2,0.5,0.2,8555.32,9626],[8,1,1,13,0.2308,0.2414,4720.67,6998],[13,1,1,19,0.3158,0.2534,6932.77,5431],[17,1,0,0,0.0,0.0,0,0],[32,1,1,26,0.2308,0.2468,5478.66,5877],[33,1,1,29,0.4138,0.2712,6152.32,6895]]],
+["A11",0.958,0.903,8,[[1,1,1,25,0.32,0.1839,9514.07,11655],[4,1,1,6,0.0,0.1765,0.0,10215],[5,1,1,26,0.2308,0.2688,7146.52,5752],[8,1,0,15,0.1333,0.2414,4411.0,6998],[11,1,1,87,0.3103,0.3015,3939.7,4719],[21,1,1,25,0.2,0.2483,5873.1,6575],[24,1,1,59,0.2373,0.1848,6331.12,5613],[26,1,1,35,0.1429,0.2848,7555.18,7813]]],
+["A12",1.158,1.189,6,[[15,1,1,75,0.2533,0.224,14593.99,9473],[16,1,1,27,0.3333,0.1429,13267.9,14515],[22,1,1,35,0.3714,0.1925,10945.14,10698],[29,1,1,68,0.2941,0.2267,4861.11,8704],[31,1,1,5,0.0,0.1673,0.0,13773],[33,1,1,94,0.2766,0.2712,7448.72,6895]]],
+["A13",1.276,1.445,10,[[4,1,1,4,0.5,0.1765,16490.03,10215],[12,1,1,13,0.3077,0.1801,4594.51,6315],[13,1,1,22,0.2273,0.2534,11895.37,5431],[19,1,1,25,0.16,0.1905,13240.69,9034],[22,1,1,11,0.0,0.1925,0.0,10698],[28,1,1,33,0.303,0.1484,13847.88,8409],[30,1,1,15,0.2,0.2647,4856.25,7559],[32,1,1,27,0.4074,0.2468,7395.32,5877],[33,1,1,48,0.2917,0.2712,9281.15,6895],[34,1,1,12,0.3333,0.2119,13474.06,6944]]],
+["A14",0.95,1.058,6,[[5,1,1,33,0.3636,0.2688,7482.44,5752],[10,1,1,64,0.125,0.1765,10450.88,12576],[24,1,1,125,0.256,0.1848,7374.28,5613],[29,1,1,44,0.3182,0.2267,7773.01,8704],[33,1,1,3,0.0,0.2712,0.0,6895],[34,1,1,35,0.2857,0.2119,9228.86,6944]]],
+["A15",0.771,0.944,4,[[5,1,1,49,0.2857,0.2688,5853.17,5752],[8,1,1,33,0.1212,0.2414,5198.5,6998],[12,1,1,39,0.1282,0.1801,6546.0,6315],[13,1,1,31,0.1935,0.2534,3127.5,5431]]],
+["A16",0.605,0.908,11,[[0,1,1,8,0.125,0.25,10840.72,12902],[1,1,1,6,0.1667,0.1839,6270.0,11655],[3,1,1,6,0.0,0.178,0.0,7335],[4,1,1,2,0.0,0.1765,0.0,10215],[13,1,1,3,0.0,0.2534,0.0,5431],[17,1,1,3,0.0,0.0,0.0,0],[18,1,1,4,0.0,0.2258,0.0,3788],[27,1,1,2,0.0,0.2,0.0,3349],[30,1,1,15,0.0,0.2647,0.0,7559],[32,1,1,40,0.175,0.2468,5770.58,5877],[34,1,1,4,0.25,0.2119,6533.26,6944]]],
+["A17",1.287,1.067,7,[[0,1,1,47,0.2979,0.25,12933.25,12902],[3,1,1,1,0.0,0.178,0.0,7335],[5,1,1,38,0.3684,0.2688,4401.74,5752],[6,1,1,7,0.1429,0.2,10338.84,9626],[7,1,1,15,0.2,0.125,6295.19,5945],[12,1,1,54,0.2222,0.1801,6646.29,6315],[26,1,1,44,0.3864,0.2848,9027.64,7813]]],
+["A18",0.962,0.87,5,[[8,1,1,28,0.1429,0.2414,4948.25,6998],[10,1,1,8,0.125,0.1765,16381.0,12576],[12,1,1,64,0.2031,0.1801,4423.88,6315],[13,1,1,50,0.2,0.2534,2886.01,5431],[32,1,1,122,0.2459,0.2468,5076.37,5877]]],
+["A19",1.134,1.044,7,[[5,1,1,24,0.375,0.2688,8735.98,5752],[10,1,1,25,0.32,0.1765,7044.91,12576],[14,1,1,52,0.3077,0.2115,3795.29,3187],[15,1,1,25,0.2,0.224,14209.66,9473],[21,1,1,17,0.1765,0.2483,8166.28,6575],[25,1,1,1,0.0,0.0,0.0,0],[33,1,1,31,0.1935,0.2712,5107.8,6895]]],
+["A20",0.868,1.193,6,[[5,1,1,41,0.3902,0.2688,6761.32,5752],[10,1,1,78,0.1667,0.1765,17084.38,12576],[12,1,1,49,0.1224,0.1801,4484.88,6315],[19,1,1,29,0.0345,0.1905,4227.6,9034],[30,1,1,3,0.6667,0.2647,7902.1,7559],[33,1,1,96,0.2292,0.2712,5955.33,6895]]],
+["A21",1.255,0.954,6,[[8,1,1,26,0.3462,0.2414,5940.24,6998],[12,1,1,32,0.2812,0.1801,4855.52,6315],[15,1,1,61,0.2787,0.224,7884.75,9473],[19,1,1,47,0.1702,0.1905,8044.12,9034],[30,1,1,48,0.3958,0.2647,10111.32,7559],[34,1,1,28,0.3214,0.2119,7051.75,6944]]],
+["A22",0.928,1.029,6,[[3,1,1,83,0.2169,0.178,8138.4,7335],[5,1,1,35,0.2286,0.2688,4545.06,5752],[12,1,1,59,0.2203,0.1801,5414.97,6315],[15,1,1,34,0.2647,0.224,10116.82,9473],[22,1,1,47,0.1702,0.1925,9266.88,10698],[32,1,1,24,0.2083,0.2468,9397.4,5877]]],
+["A23",0.752,0.973,7,[[3,1,1,31,0.1613,0.178,8699.96,7335],[5,1,1,33,0.303,0.2688,6250.5,5752],[9,1,1,1,1.0,1.0,13581.8,13582],[10,1,1,44,0.0682,0.1765,13019.33,12576],[12,1,1,26,0.0385,0.1801,1.0,6315],[14,1,1,104,0.2212,0.2115,3660.75,3187],[33,1,1,67,0.2537,0.2712,7194.54,6895]]],
+["A24",1.044,1.032,9,[[3,1,1,19,0.2632,0.178,7612.0,7335],[5,1,1,14,0.2857,0.2688,6262.48,5752],[12,1,1,12,0.1667,0.1801,5770.16,6315],[19,1,1,13,0.0,0.1905,0.0,9034],[20,1,1,39,0.2308,0.2167,6437.21,6699],[27,1,0,0,0.0,0.2,0,3349],[29,1,1,15,0.2,0.2267,7113.33,8704],[32,1,1,21,0.4762,0.2468,3225.1,5877],[33,1,1,19,0.2105,0.2712,4083.19,6895]]],
+["A25",0.728,1.014,9,[[5,1,1,29,0.4138,0.2688,7372.11,5752],[8,1,1,22,0.0909,0.2414,10567.86,6998],[12,1,1,21,0.1905,0.1801,6316.68,6315],[13,1,1,16,0.125,0.2534,8357.79,5431],[16,1,1,10,0.2,0.1429,7565.0,14515],[17,1,1,7,0.1429,0.0,700.8,0],[22,1,1,26,0.2308,0.1925,13083.83,10698],[31,1,1,56,0.1964,0.1673,12568.91,13773],[32,1,1,52,0.1154,0.2468,5500.2,5877]]],
+["A26",0.917,1.0,5,[[5,1,1,30,0.3333,0.2688,7367.56,5752],[21,1,1,24,0.2083,0.2483,3592.4,6575],[22,1,0,0,0.0,0.1925,0,10698],[29,1,1,6,0.0,0.2267,0.0,8704],[33,1,1,63,0.1587,0.2712,4673.26,6895]]],
+["A27",0.963,1.172,12,[[0,1,1,45,0.3111,0.25,13972.78,12902],[3,1,1,24,0.1667,0.178,8367.75,7335],[4,1,1,5,0.2,0.1765,4041.0,10215],[5,1,1,22,0.3182,0.2688,6272.44,5752],[6,1,1,5,0.2,0.2,11561.0,9626],[7,1,1,17,0.4118,0.125,8372.38,5945],[8,1,1,13,0.3846,0.2414,7526.8,6998],[9,1,0,0,0.0,1.0,0,13582],[11,1,1,36,0.2222,0.3015,5423.76,4719],[26,1,1,31,0.2581,0.2848,7053.43,7813],[33,1,1,71,0.2958,0.2712,8247.98,6895],[34,1,1,20,0.2,0.2119,6705.38,6944]]],
+["A28",1.19,0.848,10,[[0,1,1,37,0.2432,0.25,10601.25,12902],[3,1,1,76,0.2368,0.178,8830.67,7335],[6,1,1,3,0.3333,0.2,6978.76,9626],[7,1,1,9,0.2222,0.125,13993.66,5945],[8,1,1,26,0.2692,0.2414,4352.86,6998],[15,1,1,25,0.2,0.224,7447.07,9473],[21,1,1,2,1.0,0.2483,5040.5,6575],[26,1,1,34,0.3824,0.2848,6269.71,7813],[29,1,1,22,0.2273,0.2267,6872.21,8704],[32,1,1,18,0.3333,0.2468,5222.95,5877]]],
+["A29",0.671,1.426,9,[[1,1,1,23,0.3043,0.1839,13172.96,11655],[3,1,1,24,0.2083,0.178,7384.03,7335],[5,1,1,11,0.1818,0.2688,5575.5,5752],[10,1,1,34,0.2059,0.1765,12734.43,12576],[16,1,1,9,0.3333,0.1429,10930.54,14515],[19,1,1,3,0.3333,0.1905,1.0,9034],[28,1,1,39,0.2308,0.1484,9147.16,8409],[31,1,1,16,0.25,0.1673,17022.03,13773],[33,1,1,38,0.1579,0.2712,7167.5,6895]]],
+["A30",1.051,0.941,4,[[10,1,1,58,0.1724,0.1765,7088.55,12576],[12,1,1,42,0.119,0.1801,9499.38,6315],[13,1,1,31,0.1613,0.2534,5305.06,5431],[15,1,1,87,0.2184,0.224,9205.4,9473]]],
+["A31",1.169,1.109,4,[[5,1,1,2,0.5,0.2688,12246.0,5752],[8,1,1,2,0.0,0.2414,0.0,6998],[29,1,1,5,0.4,0.2267,6861.0,8704],[33,1,1,13,0.3846,0.2712,7678.16,6895]]],
+["A32",0.925,1.068,7,[[2,1,1,45,0.2222,0.1778,15942.33,13620],[21,1,1,44,0.2045,0.2483,6764.56,6575],[22,1,1,34,0.1471,0.1925,13135.47,10698],[23,1,1,47,0.2128,0.1818,7901.54,8569],[25,1,1,1,0.0,0.0,0.0,0],[27,1,1,31,0.3226,0.2,2622.06,3349],[29,1,1,50,0.16,0.2267,5770.82,8704]]],
+["A34",1.231,0.89,7,[[5,1,1,30,0.2667,0.2688,6698.86,5752],[11,1,1,84,0.4881,0.3015,5226.58,4719],[12,1,1,26,0.3077,0.1801,8047.29,6315],[13,1,1,14,0.3571,0.2534,4436.06,5431],[18,1,1,16,0.25,0.2258,7344.5,3788],[24,1,1,65,0.2615,0.1848,5064.86,5613],[33,1,1,42,0.2619,0.2712,5592.16,6895]]],
+["A35",0.902,1.121,10,[[0,1,1,20,0.05,0.25,12099.48,12902],[1,1,1,29,0.2759,0.1839,17830.06,11655],[3,1,1,44,0.2045,0.178,9197.91,7335],[6,1,1,5,0.0,0.2,0.0,9626],[13,1,1,26,0.1923,0.2534,5607.11,5431],[23,1,1,26,0.1923,0.1818,13193.53,8569],[26,1,1,33,0.1515,0.2848,8489.46,7813],[27,1,1,19,0.3684,0.2,4673.59,3349],[29,1,1,26,0.1923,0.2267,3921.81,8704],[31,1,1,47,0.2979,0.1673,13813.25,13773]]],
+["A36",1.368,0.924,6,[[0,1,0,0,0.0,0.25,0,12902],[3,1,1,46,0.0435,0.178,3450.5,7335],[8,1,1,29,0.3448,0.2414,5271.87,6998],[10,1,1,70,0.3,0.1765,10078.29,12576],[12,1,1,55,0.4,0.1801,6198.75,6315],[30,1,1,44,0.3182,0.2647,5569.21,7559]]],
+["A37",0.921,1.071,5,[[5,1,1,87,0.3448,0.2688,6434.07,5752],[10,1,1,94,0.2021,0.1765,12567.07,12576],[31,1,1,55,0.1273,0.1673,18949.88,13773],[32,1,1,2,0.5,0.2468,7311.1,5877],[34,1,1,51,0.2549,0.2119,5456.81,6944]]],
+["A38",1.277,0.996,7,[[5,1,1,35,0.3714,0.2688,5745.99,5752],[8,1,1,31,0.2903,0.2414,4705.2,6998],[12,1,1,40,0.15,0.1801,6264.27,6315],[27,1,1,4,0.0,0.2,0.0,3349],[29,1,1,43,0.3256,0.2267,8438.84,8704],[30,1,1,35,0.1714,0.2647,4011.12,7559],[33,1,1,68,0.2941,0.2712,6621.14,6895]]],
+["A39",0.887,1.188,7,[[3,1,1,46,0.1304,0.178,8595.68,7335],[5,1,1,36,0.2222,0.2688,6264.32,5752],[7,1,1,6,0.1667,0.125,3816.0,5945],[8,1,1,38,0.3421,0.2414,8631.85,6998],[12,1,1,37,0.2703,0.1801,8170.12,6315],[21,1,1,38,0.1579,0.2483,11085.95,6575],[28,1,1,11,0.0,0.1484,0.0,8409]]],
+["A40",1.024,1.08,4,[[12,1,1,56,0.25,0.1801,5393.67,6315],[15,1,1,96,0.2292,0.224,8453.79,9473],[24,1,1,88,0.2841,0.1848,5835.73,5613],[30,1,1,42,0.3095,0.2647,7611.79,7559]]],
+["A41",0.942,1.058,3,[[5,1,1,5,0.2,0.2688,4726.0,5752],[29,1,1,8,0.25,0.2267,4511.0,8704],[33,1,1,29,0.2414,0.2712,8585.15,6895]]],
+["A42",0.949,0.953,8,[[10,1,1,13,0.0769,0.1765,15786.52,12576],[13,1,1,19,0.2105,0.2534,5392.58,5431],[15,1,1,48,0.2292,0.224,8893.99,9473],[17,1,1,4,0.0,0.0,0.0,0],[23,1,1,22,0.1364,0.1818,8918.52,8569],[26,1,1,37,0.2703,0.2848,6758.6,7813],[28,1,1,43,0.186,0.1484,8005.4,8409],[32,1,1,56,0.3214,0.2468,5791.44,5877]]],
+["A43",0.833,0.906,5,[[5,1,1,43,0.3953,0.2688,5755.5,5752],[22,1,1,45,0.2667,0.1925,9308.79,10698],[27,1,1,26,0.1154,0.2,4578.67,3349],[31,1,1,67,0.2239,0.1673,10624.97,13773],[33,1,1,64,0.3125,0.2712,5197.94,6895]]],
+["A44",0.819,1.126,11,[[3,1,1,21,0.1905,0.178,8580.76,7335],[8,1,1,17,0.2941,0.2414,9110.4,6998],[10,1,1,32,0.25,0.1765,16602.01,12576],[12,1,1,12,0.0,0.1801,0.0,6315],[13,1,1,7,0.0,0.2534,0.0,5431],[15,1,1,22,0.1364,0.224,9328.0,9473],[18,1,1,18,0.2222,0.2258,4483.89,3788],[20,1,1,8,0.0,0.2167,0.0,6699],[21,1,1,1,1.0,0.2483,8928.3,6575],[28,1,1,34,0.1765,0.1484,8416.24,8409],[32,1,1,35,0.1714,0.2468,8380.06,5877]]],
+["A45",1.042,0.958,5,[[0,1,1,60,0.2167,0.25,13353.81,12902],[6,1,1,4,0.25,0.2,9645.98,9626],[8,1,1,38,0.1579,0.2414,6544.5,6998],[29,1,1,60,0.2333,0.2267,5768.07,8704],[31,1,1,94,0.2021,0.1673,15111.62,13773]]],
+["A46",1.096,1.032,6,[[8,1,1,31,0.3226,0.2414,7200.8,6998],[13,1,1,32,0.25,0.2534,3278.14,5431],[15,1,1,118,0.3051,0.224,8628.73,9473],[29,1,1,21,0.2857,0.2267,7122.9,8704],[31,1,1,59,0.2034,0.1673,11378.36,13773],[32,1,1,41,0.1707,0.2468,1920.0,5877]]],
+["A47",1.009,0.863,10,[[0,1,1,27,0.2963,0.25,11637.71,12902],[4,1,1,7,0.2857,0.1765,3717.54,10215],[6,1,1,6,0.0,0.2,0.0,9626],[8,1,1,13,0.2308,0.2414,3033.33,6998],[13,1,1,20,0.15,0.2534,3770.33,5431],[15,1,1,94,0.3191,0.224,8848.06,9473],[24,1,1,63,0.2063,0.1848,5129.73,5613],[26,1,1,37,0.2432,0.2848,5674.44,7813],[31,1,0,0,0.0,0.1673,0,13773],[34,1,1,21,0.3333,0.2119,7509.82,6944]]],
+["A48",0.946,0.794,7,[[5,1,1,7,0.1429,0.2688,7751.0,5752],[11,1,1,29,0.2414,0.3015,3253.57,4719],[13,1,1,3,0.6667,0.2534,1330.5,5431],[15,1,1,17,0.2353,0.224,7212.0,9473],[23,1,1,1,0.0,0.1818,0.0,8569],[24,1,1,15,0.1333,0.1848,7510.0,5613],[33,1,1,1,1.0,0.2712,6420.0,6895]]],
+["A49",0.78,0.807,5,[[5,1,1,64,0.3125,0.2688,6370.03,5752],[8,1,0,0,0.0,0.2414,0,6998],[27,1,1,35,0.2,0.2,5698.42,3349],[32,1,1,84,0.1667,0.2468,5647.66,5877],[33,1,1,108,0.2315,0.2712,5900.9,6895]]],
+["A50",0.973,1.024,8,[[5,1,1,22,0.3182,0.2688,7038.12,5752],[10,1,1,28,0.1429,0.1765,11318.25,12576],[12,1,1,24,0.1667,0.1801,4710.92,6315],[14,1,1,2,0.0,0.2115,0.0,3187],[22,1,1,3,0.0,0.1925,0.0,10698],[24,1,1,75,0.3467,0.1848,6939.32,5613],[31,1,1,2,0.0,0.1673,0.0,13773],[33,1,1,46,0.1304,0.2712,5569.1,6895]]],
+["A51",0.981,0.948,7,[[2,1,1,15,0.2,0.1778,13041.34,13620],[12,1,1,20,0.25,0.1801,7170.32,6315],[16,1,1,12,0.0833,0.1429,2895.0,14515],[22,1,1,22,0.1818,0.1925,11046.25,10698],[29,1,1,31,0.3548,0.2267,14707.7,8704],[31,1,1,43,0.186,0.1673,9559.06,13773],[33,1,1,45,0.2,0.2712,8940.83,6895]]],
+["A52",0.932,0.924,4,[[5,1,1,79,0.3291,0.2688,5272.26,5752],[8,1,1,62,0.2581,0.2414,6586.35,6998],[10,1,1,77,0.1299,0.1765,10085.05,12576],[13,1,1,46,0.1304,0.2534,5304.85,5431]]],
+["A53",1.028,1.132,7,[[5,1,1,71,0.3944,0.2688,7558.09,5752],[8,1,1,22,0.3636,0.2414,6699.66,6998],[13,1,1,43,0.3953,0.2534,5917.21,5431],[19,1,1,6,0.0,0.1905,0.0,9034],[21,1,1,52,0.1538,0.2483,9401.53,6575],[30,1,1,35,0.2857,0.2647,8182.41,7559],[33,1,1,61,0.2131,0.2712,7836.22,6895]]],
+["A54",0.969,1.281,5,[[5,1,1,21,0.1905,0.2688,5684.98,5752],[12,1,1,45,0.1556,0.1801,4664.39,6315],[24,1,1,125,0.192,0.1848,5956.47,5613],[29,1,1,63,0.2698,0.2267,9688.88,8704],[31,1,1,26,0.0385,0.1673,8050.0,13773]]]
+];
+const AGENTS = AGENTS_RAW.map((r,i)=>{
+  const rows=r[4].map(p=>({dest:p[0],slots0:p[1],onboarded:!!p[2],opps:p[3],
+    saConv:p[4],mktConv:p[5],saPanier:p[6],mktPanier:p[7]}));
+  return {idx:i,code:r[0],ic:r[1],ip:r[2],slots:r[3],
+    pf:rows.map(x=>x.dest),pfMap:Object.fromEntries(rows.map(x=>[x.dest,x]))};
+});
+
+/* ═══════════ ENCODAGE COMPACT (documents < 256 Kio) ═══════════ */
+function encAlloc(al){const p=[];for(const a of AGENTS)for(const d of DEST){
+  const s=al[a.idx][d.idx];if(s)p.push(a.idx+'.'+d.idx+'.'+s)}return p.join('~')}
+function decAlloc(str){const al={};
+  for(const a of AGENTS){al[a.idx]={};for(const d of DEST)al[a.idx][d.idx]=0}
+  if(str)for(const t of str.split('~')){const[x,y,s]=t.split('.').map(Number);
+    if(al[x]!==undefined)al[x][y]=s}
+  return al}
+const encMapN=m=>Object.keys(m).filter(k=>m[k]).map(k=>k+'.'+m[k]).join('~');
+const decMapN=s=>{const m={};if(s)for(const t of s.split('~')){const[k,v]=t.split('.');m[k]=+v}return m};
+function encOnb(o){const p=[];for(const ai in o)for(const di in o[ai])if(o[ai][di])p.push(ai+'.'+di);return p.join('~')}
+function decOnb(s){const o={};for(const a of AGENTS)o[a.idx]={};
+  if(s)for(const t of s.split('~')){const[ai,di]=t.split('.');if(o[ai])o[ai][di]=true}return o}
+
+/* ═══════════ MODÈLE ═══════════
+   Un poste = un agent onboardé sur une destination (plus de notion de quantité de
+   slots). La valeur d'un poste sur une destination = sa part du volume réel de
+   cette destination (opps réelles ÷ nombre de postes que la destination supporte). */
+const slotCA = (a,d)=> CR3_M*d.ic*a.ic * AOV_M*d.ip*a.ip * d.oppsPerSeat;
+const totalCA = al=>{let c=0;for(const a of AGENTS)for(const d of DEST){const s=al[a.idx][d.idx];if(s)c+=s*slotCA(a,d)}return c};
+const agentCA = (al,a)=>{let c=0;for(const d of DEST){const s=al[a.idx][d.idx];if(s)c+=s*slotCA(a,d)}return c};
+const used = (al,ai)=>{let n=0;for(const d of DEST)n+=al[ai][d.idx];return n};
+const placedTotal = al=>{let n=0;for(const a of AGENTS)n+=used(al,a.idx);return n};
+
+function marketIdx(al){let n=0,c=0,v=0;
+  for(const a of AGENTS)for(const d of DEST){const s=al[a.idx][d.idx];
+    if(s){n+=s;c+=s*a.ic*d.ic;v+=s*a.ip*d.ip}}
+  return n?{cr3:c/n,aov:v/n}:{cr3:1,aov:1}}
+
+/* Allocation de départ réelle : qui est onboardé sur quoi aujourd'hui (binaire —
+   encodée en agent.destination.1, pas de quantité). */
+const BASE_ENC = "0.1.1~0.3.1~0.7.1~0.8.1~0.21.1~0.26.1~1.5.1~1.10.1~1.15.1~1.32.1~1.33.1~2.1.1~2.5.1~2.12.1~2.22.1~2.32.1~3.5.1~3.8.1~3.11.1~3.12.1~3.23.1~3.25.1~3.30.1~4.1.1~4.5.1~4.20.1~4.31.1~4.32.1~5.5.1~5.8.1~5.10.1~5.12.1~5.15.1~5.21.1~5.24.1~5.32.1~5.33.1~6.2.1~6.12.1~6.15.1~6.16.1~6.22.1~6.28.1~6.29.1~6.31.1~6.33.1~7.4.1~7.5.1~7.10.1~7.12.1~7.18.1~7.28.1~7.29.1~7.34.1~8.0.1~8.6.1~8.8.1~8.13.1~8.17.1~8.32.1~8.33.1~9.1.1~9.4.1~9.5.1~9.8.1~9.11.1~9.21.1~9.24.1~9.26.1~10.15.1~10.16.1~10.22.1~10.29.1~10.31.1~10.33.1~11.4.1~11.12.1~11.13.1~11.19.1~11.22.1~11.28.1~11.30.1~11.32.1~11.33.1~11.34.1~12.5.1~12.10.1~12.24.1~12.29.1~12.33.1~12.34.1~13.5.1~13.8.1~13.12.1~13.13.1~14.0.1~14.1.1~14.3.1~14.4.1~14.13.1~14.17.1~14.18.1~14.27.1~14.30.1~14.32.1~14.34.1~15.0.1~15.3.1~15.5.1~15.6.1~15.7.1~15.12.1~15.26.1~16.8.1~16.10.1~16.12.1~16.13.1~16.32.1~17.5.1~17.10.1~17.14.1~17.15.1~17.21.1~17.25.1~17.33.1~18.5.1~18.10.1~18.12.1~18.19.1~18.30.1~18.33.1~19.8.1~19.12.1~19.15.1~19.19.1~19.30.1~19.34.1~20.3.1~20.5.1~20.12.1~20.15.1~20.22.1~20.32.1~21.3.1~21.5.1~21.9.1~21.10.1~21.12.1~21.14.1~21.33.1~22.3.1~22.5.1~22.12.1~22.19.1~22.20.1~22.27.1~22.29.1~22.32.1~22.33.1~23.5.1~23.8.1~23.12.1~23.13.1~23.16.1~23.17.1~23.22.1~23.31.1~23.32.1~24.5.1~24.21.1~24.22.1~24.29.1~24.33.1~25.0.1~25.3.1~25.4.1~25.5.1~25.6.1~25.7.1~25.8.1~25.9.1~25.11.1~25.26.1~25.33.1~25.34.1~26.0.1~26.3.1~26.6.1~26.7.1~26.8.1~26.15.1~26.21.1~26.26.1~26.29.1~26.32.1~27.1.1~27.3.1~27.5.1~27.10.1~27.16.1~27.19.1~27.28.1~27.31.1~27.33.1~28.10.1~28.12.1~28.13.1~28.15.1~29.5.1~29.8.1~29.29.1~29.33.1~30.2.1~30.21.1~30.22.1~30.23.1~30.25.1~30.27.1~30.29.1~31.5.1~31.11.1~31.12.1~31.13.1~31.18.1~31.24.1~31.33.1~32.0.1~32.1.1~32.3.1~32.6.1~32.13.1~32.23.1~32.26.1~32.27.1~32.29.1~32.31.1~33.0.1~33.3.1~33.8.1~33.10.1~33.12.1~33.30.1~34.5.1~34.10.1~34.31.1~34.32.1~34.34.1~35.5.1~35.8.1~35.12.1~35.27.1~35.29.1~35.30.1~35.33.1~36.3.1~36.5.1~36.7.1~36.8.1~36.12.1~36.21.1~36.28.1~37.12.1~37.15.1~37.24.1~37.30.1~38.5.1~38.29.1~38.33.1~39.10.1~39.13.1~39.15.1~39.17.1~39.23.1~39.26.1~39.28.1~39.32.1~40.5.1~40.22.1~40.27.1~40.31.1~40.33.1~41.3.1~41.8.1~41.10.1~41.12.1~41.13.1~41.15.1~41.18.1~41.20.1~41.21.1~41.28.1~41.32.1~42.0.1~42.6.1~42.8.1~42.29.1~42.31.1~43.8.1~43.13.1~43.15.1~43.29.1~43.31.1~43.32.1~44.0.1~44.4.1~44.6.1~44.8.1~44.13.1~44.15.1~44.24.1~44.26.1~44.31.1~44.34.1~45.5.1~45.11.1~45.13.1~45.15.1~45.23.1~45.24.1~45.33.1~46.5.1~46.8.1~46.27.1~46.32.1~46.33.1~47.5.1~47.10.1~47.12.1~47.14.1~47.22.1~47.24.1~47.31.1~47.33.1~48.2.1~48.12.1~48.16.1~48.22.1~48.29.1~48.31.1~48.33.1~49.5.1~49.8.1~49.10.1~49.13.1~50.5.1~50.8.1~50.13.1~50.19.1~50.21.1~50.30.1~50.33.1~51.5.1~51.12.1~51.24.1~51.29.1~51.31.1";
+const BASE = decAlloc(BASE_ENC);
+const BASE_CA = totalCA(BASE);
+const TOTAL_CAP = AGENTS.reduce((s,a)=>s+a.slots,0);
+{const el=document.getElementById('gate-lede'); if(el) el.textContent=
+  TOTAL_CAP+' postes à réarbitrer entre '+AGENTS.length+' agents et '+DEST.length+' destinations.';}
+{const el=document.getElementById('g-total-cap'); if(el) el.textContent=TOTAL_CAP;}
+
+/* Solution de référence (heuristique forte : on élague les 2 pires postes de
+   chaque agent puis on comble par valeur décroissante, sous les mêmes règles que
+   le jeu) : [indice_conversion moyen pondéré, indice_panier moyen pondéré, CA
+   généré] par destination, pour l'écran de comparaison de fin de partie. */
+const REF_DEST = [
+[1.0578,0.9748,395671],
+[0.813,0.9182,91155],
+[0.8503,0.9972,130121],
+[0.9627,0.999,445581],
+[0.784,1.04,23095],
+[0.9811,1.0195,1729878],
+[0,0,0],
+[0,0,0],
+[1.0028,1.0144,785774],
+[0.963,1.172,14525],
+[1.0189,1.0645,2401861],
+[0.963,1.172,10374],
+[1.0097,1.0351,222199],
+[0.9086,0.9683,89304],
+[0,0,0],
+[1.0738,1.0318,1510195],
+[0,0,0],
+[0,0,0],
+[0.605,0.908,7750],
+[1.1033,1.1543,847433],
+[0,0,0],
+[0.9932,0.985,336859],
+[0.9616,1.0594,600987],
+[0.8505,0.944,52405],
+[1.0534,1.0159,883333],
+[1.037,1.068,175854],
+[1.0307,0.9992,420606],
+[0,0,0],
+[1.018,1.1258,553315],
+[0.964,0.9711,584621],
+[0.9624,0.9852,222576],
+[0.9473,1.0572,646928],
+[0.9846,1.0041,847278],
+[1.0095,1.049,1667430],
+[1.0164,1.0592,117623]
+];
+const CA_REF = REF_DEST.reduce((s,r)=>s+r[2],0);
+const GISEMENT = CA_REF-BASE_CA;
+const scoreOf = ca=>((ca-BASE_CA)/GISEMENT)*100;
+
+/* ═══════════ FORMATS ═══════════ */
+const nf = new Intl.NumberFormat('fr-FR');
+const eur = v=>nf.format(Math.round(v))+' €';
+const mEur = v=>(v/1e6).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' M€';
+const signed = v=>(v>=0?'+ ':'− ')+nf.format(Math.abs(Math.round(v)))+' €';
+const pct = v=>v.toLocaleString('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const catClass = c=>({'Star':'star','Volume Driver':'driver','Dog':'dog','Question Mark':'qmark'})[c]||'qmark';
+const chipCat = c=> c==null ? '<span class="chip qmark">Non classée</span>' : '<span class="chip '+catClass(c)+'">'+esc(c)+'</span>';
+const idxChip = (v,txt)=>'<span class="idx '+(v>1?'up':'dn')+'">'+txt+'</span>';
+/* Ratio réel de l'agent (sa_conversion ou son_panier) face au marché de la destination.
+   `mkt` peut être 0 quand la destination n'a pas d'historique marché (ex. Oman). */
+const perfChip = (sa,mkt)=> !mkt ? '<span class="idx" style="opacity:.55">n/a</span>' : idxChip(sa/mkt,(sa/mkt).toFixed(2));
+
+/* ═══════════ ÉTAT ═══════════ */
+/* Backend : Google Apps Script (Web App déployé en accès "Anyone"), pas la base
+   Claude — celle-ci exige un compte de la même organisation, incompatible avec
+   un lien public. Coller ici l'URL /exec renvoyée par le déploiement. */
+const API_URL = 'PASTE_APPS_SCRIPT_URL_HERE';
+let apiOk=false;
+let groups=[];          // [{id,name,lead,allocStr,retraits,onb,ca,score,done,ts}]
+let names=null;         // {A01:"…"} — admin seulement
+let me=null;            // groupe joué localement
+let st=null;            // {alloc,retraits,onb,phase,sel}
+let adminSel=null, unsub=null, saveTimer=null, asAnimateur=false;
+let gameNamesOn=false;  // bouton "Afficher les noms" côté écran de jeu — indépendant du pilotage
+
+const $ = id=>document.getElementById(id);
+const show = id=>{for(const s of document.querySelectorAll('.screen'))s.classList.remove('on');$(id).classList.add('on')};
+const agentLabel = a=> (names&&names[a.code]) ? names[a.code] : a.code;
+const gameLabel = a=> gameNamesOn ? (LOCAL_NAMES[a.code]||a.code) : a.code;
+
+function freshState(){
+  const s={alloc:decAlloc(encAlloc(BASE)),retraits:{},onb:{},cut:{},phase:1,sel:null};
+  for(const a of AGENTS){s.retraits[a.idx]=0;s.onb[a.idx]={};s.cut[a.idx]={}}
+  return s}
+
+function stateFromDoc(g){
+  const stale = g.dataVersion!==DATA_VERSION;
+  const s={alloc:(g.allocStr&&!stale)?decAlloc(g.allocStr):decAlloc(encAlloc(BASE)),
+    retraits:stale?{}:decMapN(g.retraits),onb:stale?{}:decOnb(g.onb),cut:stale?{}:decOnb(g.cut),phase:1,sel:null};
+  for(const a of AGENTS){if(s.retraits[a.idx]===undefined)s.retraits[a.idx]=0;if(!s.onb[a.idx])s.onb[a.idx]={};if(!s.cut[a.idx])s.cut[a.idx]={}}
+  return s}
+
+/* ═══════════ PERSISTANCE ═══════════ */
+function localSave(){try{localStorage.setItem('atq4',JSON.stringify(groups))}catch(e){}}
+function localLoad(){try{groups=JSON.parse(localStorage.getItem('atq4')||'[]')}catch(e){groups=[]}}
+
+async function pushGroup(g){
+  const body={id:g.id,name:g.name,lead:g.lead,allocStr:g.allocStr||'',retraits:g.retraits||'',
+    onb:g.onb||'',cut:g.cut||'',ca:g.ca||BASE_CA,score:g.score===null||g.score===undefined?'':g.score,
+    done:!!g.done,ts:Date.now(),dataVersion:DATA_VERSION};
+  const i=groups.findIndex(x=>x.id===g.id);
+  if(i<0)groups.push({...body,score:body.score===''?null:body.score});
+  else groups[i]={...groups[i],...body,score:body.score===''?null:body.score};
+  localSave();
+  if(!API_URL || API_URL.indexOf('PASTE_')===0)return;
+  try{
+    await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
+  }catch(e){
+    const msg='Synchronisation impossible — la partie reste sur ce poste.';
+    banner('admin-banner',msg); banner('game-banner',msg);
+  }
+}
+
+function queueSave(){
+  if(!me)return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    const ca=totalCA(st.alloc);
+    pushGroup({id:me.id,name:me.name,lead:me.lead,allocStr:encAlloc(st.alloc),
+      retraits:encMapN(st.retraits),onb:encOnb(st.onb),cut:encOnb(st.cut),ca,
+      score:me.done?scoreOf(ca):null,done:me.done});
+  },500)}
+
+function banner(id,msg){const el=$(id);if(!el)return;
+  el.innerHTML=msg?'<div class="banner">'+esc(msg)+'</div>':''}
+
+/* ═══════════ DÉMARRAGE ═══════════ */
+/* Lien direct par équipe : ?team=<id> dans l'URL rejoint cette équipe sans
+   passer par l'écran de sélection. Prioritaire sur la reprise automatique. */
+const teamParam = new URLSearchParams(location.search).get('team');
+let teamParamJoined = false;
+function tryJoinFromUrl(){
+  if(teamParamJoined || !teamParam || me) return;
+  const g=groups.find(x=>x.id===teamParam);
+  if(g){ teamParamJoined=true; joinGroup(teamParam); }
+}
+
+async function fetchGroups(){
+  if(!API_URL || API_URL.indexOf('PASTE_')===0)return;
+  try{
+    const res=await fetch(API_URL,{method:'GET'});
+    const data=await res.json();
+    groups=data.map(g=>({...g,score:(g.score===''||g.score===null||g.score===undefined)?null:g.score}));
+    apiOk=true;
+    localSave();
+    renderGatePicker();
+    tryJoinFromUrl();
+    if($('s-admin').classList.contains('on'))renderAdmin();
+    if(me){const fresh=groups.find(g=>g.id===me.id);if(fresh){me.name=fresh.name;me.lead=fresh.lead}}
+  }catch(e){
+    if(apiOk)banner('admin-banner','Synchronisation interrompue — les équipes ne remontent plus en direct.');
+    apiOk=false;
+  }
+}
+
+(async function boot(){
+  localLoad();
+  renderGatePicker();
+  tryJoinFromUrl();
+  if(!API_URL || API_URL.indexOf('PASTE_')===0){
+    banner('admin-banner','Version de secours hors ligne : seules les parties jouées sur ce poste remontent ici.');
+    banner('game-banner','Mode hors ligne : votre partie reste sur ce poste.');
+  }else{
+    await fetchGroups();
+    setInterval(fetchGroups,3000);
+  }
+  if(!teamParam){
+    const saved=localStorage.getItem('atq4-me');
+    if(saved){const g=groups.find(x=>x.id===saved);if(g)joinGroup(saved)}
+  }
+})();
+
+/* ═══════════ GATE ═══════════ */
+function renderGatePicker(){
+  const box=$('gate-groups');
+  if(!groups.length){box.innerHTML='<div class="hint">Aucune équipe pour l\'instant. '+
+    'L\'animateur doit en créer depuis le pilotage.</div>';return}
+  box.innerHTML=groups.map(g=>'<button data-join="'+esc(g.id)+'"><span>'+esc(g.name)+
+    '</span><span class="hint num">'+(g.done?'terminé':'')+'</span></button>').join('');
+}
+document.addEventListener('click',e=>{
+  const j=e.target.closest('[data-join]');
+  if(j)joinGroup(j.getAttribute('data-join'));
+});
+$('btn-login').onclick=()=>{
+  if($('pwd').value.trim()!==ADMIN_CODE){$('pwd').value='';$('pwd').placeholder='Code incorrect';return}
+  $('pwd').value='';
+  openAdmin()};
+$('pwd').addEventListener('keydown',e=>{if(e.key==='Enter')$('btn-login').click()});
+
+/* ═══════════ ADMIN ═══════════ */
+async function openAdmin(){
+  show('s-admin');
+  if(names===null)names=LOCAL_NAMES;
+  $('names-state').textContent='noms réels visibles';
+  renderAdmin();
+}
+$('btn-quit-admin').onclick=()=>{show('s-gate')};
+
+$('btn-newgroup').onclick=()=>{$('ng-name').focus()};
+
+async function addGroup(){
+  const nameEl=$('ng-name'), leadEl=$('ng-lead');
+  const name=nameEl.value.trim();
+  if(!name){nameEl.placeholder='Nom requis';nameEl.focus();return}
+  const lead=leadEl.value.trim();
+  nameEl.value='';leadEl.value='';nameEl.placeholder='Nom de l\'équipe';nameEl.focus();
+  const id='g'+Date.now().toString(36);
+  adminSel=id;
+  await pushGroup({id,name,lead,allocStr:encAlloc(BASE),
+    retraits:'',onb:'',ca:BASE_CA,score:null,done:false});
+  renderAdmin(); renderGatePicker();
+}
+$('ng-add').onclick=addGroup;
+for(const el of [$('ng-name'),$('ng-lead')])
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addGroup()}});
+
+function renderAdmin(){
+  $('ad-base').textContent=mEur(BASE_CA);
+  $('ad-gisement').textContent=eur(GISEMENT);
+  $('ad-count').textContent=groups.length;
+  $('ad-stamp').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const ranked=[...groups].sort((a,b)=>(b.ca||BASE_CA)-(a.ca||BASE_CA));
+  $('ad-board').innerHTML = ranked.length ? ranked.map((g,i)=>{
+    const ca=g.ca||BASE_CA, dl=ca-BASE_CA, al=decAlloc(g.allocStr);
+    const rs=Object.values(decMapN(g.retraits)).reduce((s,v)=>s+v,0);
+    const os=(g.onb||'').split('~').filter(Boolean).length;
+    const state=g.done?'<span class="chip done">Validé</span>'
+      :(g.allocStr&&g.allocStr!==encAlloc(BASE))?'<span class="chip live">En cours</span>'
+      :'<span class="chip idle">En attente</span>';
+    return '<tr data-grp="'+esc(g.id)+'" aria-selected="'+(adminSel===g.id)+'">'+
+      '<td class="num" style="font-weight:600">'+(i+1)+'</td>'+
+      '<td style="font-weight:600">'+esc(g.name)+'</td>'+
+      '<td class="hint">'+esc(g.lead||'—')+'</td>'+
+      '<td class="num" style="font-weight:600">'+mEur(ca)+'</td>'+
+      '<td class="num '+(dl>=0?'up':'dn')+'" style="font-weight:600">'+signed(dl)+'</td>'+
+      '<td class="num" style="font-weight:600">'+scoreOf(ca).toFixed(0)+' %</td>'+
+      '<td class="hint num">'+rs+' retraits · '+os+' onb.</td>'+
+      '<td class="num hint">'+placedTotal(al)+'/'+TOTAL_CAP+'</td>'+
+      '<td>'+state+'</td>'+
+      '<td style="display:flex;gap:5px"><button class="btn sm ghost" data-open="'+esc(g.id)+'">Ouvrir</button>'+
+      '<button class="btn sm ghost" data-copylink="'+esc(g.id)+'">Copier le lien</button></td></tr>'}).join('')
+    : '<tr><td colspan="10" class="empty">Aucune équipe pour l\'instant — ajoutez-en une ci-dessus.</td></tr>';
+  renderAdminDetail();
+}
+document.addEventListener('click',e=>{
+  const o=e.target.closest('[data-open]');
+  if(o){joinGroup(o.getAttribute('data-open'),true);return}
+  const cl=e.target.closest('[data-copylink]');
+  if(cl){
+    const id=cl.getAttribute('data-copylink');
+    const url=location.origin+location.pathname+'?team='+encodeURIComponent(id);
+    (navigator.clipboard&&navigator.clipboard.writeText
+      ? navigator.clipboard.writeText(url) : Promise.reject())
+      .then(()=>{cl.textContent='Copié !';setTimeout(()=>{cl.textContent='Copier le lien'},1500)})
+      .catch(()=>{
+        // Pas d'accès au presse-papiers (contexte restreint) : on affiche le
+        // lien dans un champ sélectionnable au lieu d'une boîte de dialogue.
+        const inp=document.createElement('input');
+        inp.readOnly=true; inp.value=url; inp.style.cssText='width:220px;margin:0;font-size:11px';
+        cl.replaceWith(inp); inp.focus(); inp.select();
+        const revert=ev=>{ if(ev.target!==inp){ inp.replaceWith(cl); document.removeEventListener('click',revert,true) } };
+        setTimeout(()=>document.addEventListener('click',revert,true),0);
+      });
+    return;
+  }
+  const r=e.target.closest('[data-grp]');
+  if(r){adminSel=r.getAttribute('data-grp');renderAdmin()}
+});
+
+function renderAdminDetail(){
+  const box=$('ad-detail');
+  const g=groups.find(x=>x.id===adminSel);
+  if(!g){box.innerHTML='<div class="empty">Sélectionnez une équipe dans le classement.</div>';return}
+  if(!g.allocStr){box.innerHTML='<div class="empty"><b>'+esc(g.name)+'</b> n\'a pas encore ouvert la partie.</div>';return}
+
+  const al=decAlloc(g.allocStr), onb=decOnb(g.onb), ca=totalCA(al), mi=marketIdx(al);
+  const head='<div class="instr" style="margin-bottom:14px">'+
+    '<div class="gauge"><span class="lab">CA</span><span class="val num">'+mEur(ca)+'</span>'+
+      '<span class="sub num '+(ca>=BASE_CA?'up':'dn')+'">'+signed(ca-BASE_CA)+'</span></div>'+
+    '<div class="gauge"><span class="lab">Score</span><span class="val num">'+scoreOf(ca).toFixed(0)+' %</span></div>'+
+    '<div class="gauge"><span class="lab">CR3</span><span class="val num '+(mi.cr3>1?'up':'dn')+'">'+pct(CR3_M*mi.cr3*100)+'</span></div>'+
+    '<div class="gauge"><span class="lab">AOV</span><span class="val num '+(mi.aov>1?'up':'dn')+'">'+eur(AOV_M*mi.aov)+'</span></div>'+
+    '<div class="gauge"><span class="lab">Postes</span><span class="val num">'+placedTotal(al)+'</span><span class="sub hint">sur '+TOTAL_CAP+'</span></div>'+
+    '</div>';
+
+  const rows=[];
+  for(const a of AGENTS){
+    const out=[],inn=[];
+    for(const d of DEST){
+      const now=al[a.idx][d.idx], was=BASE[a.idx][d.idx];
+      if(now<was)out.push(d.nom+' ('+(was-now)+')');
+      if(now>was)inn.push(d.nom+' (+'+(now-was)+(onb[a.idx]&&onb[a.idx][d.idx]?', onboardé':'')+')');
+    }
+    if(out.length||inn.length)rows.push({a,out,inn,d:agentCA(al,a)-agentCA(BASE,a)});
+  }
+  rows.sort((x,y)=>y.d-x.d);
+  if(!rows.length){box.innerHTML=head+'<div class="empty">Aucun arbitrage pour l\'instant.</div>';return}
+
+  box.innerHTML=head+'<div class="scroll-x"><table><thead><tr>'+
+    '<th>Agent</th><th>Indices</th><th>Retiré</th><th>Ajouté</th><th>Δ CA</th>'+
+    '</tr></thead><tbody>'+rows.map(r=>
+    '<tr><td><div style="font-weight:600">'+esc(agentLabel(r.a))+'</div>'+
+      (names&&names[r.a.code]?'<div class="hint num">'+r.a.code+'</div>':'')+'</td>'+
+    '<td class="hint">CR3 '+idxChip(r.a.ic,r.a.ic.toFixed(2))+'<br>AOV '+idxChip(r.a.ip,r.a.ip.toFixed(2))+'</td>'+
+    '<td style="font-size:12px;color:var(--loss)">'+(r.out.map(esc).join('<br>')||'—')+'</td>'+
+    '<td style="font-size:12px;color:var(--gain)">'+(r.inn.map(esc).join('<br>')||'—')+'</td>'+
+    '<td class="num '+(r.d>=0?'up':'dn')+'" style="font-weight:600">'+signed(r.d)+'</td></tr>'
+    ).join('')+'</tbody></table></div>';
+}
+
+/* ═══════════ JEU ═══════════ */
+function joinGroup(id,fromAdmin){
+  const g=groups.find(x=>x.id===id);if(!g)return;
+  me={id:g.id,name:g.name,lead:g.lead,done:!!g.done};
+  st=stateFromDoc(g);
+  asAnimateur=!!fromAdmin;
+  // L'animateur qui consulte ne doit pas être ré-aiguillé vers cette équipe au rechargement
+  if(!fromAdmin){try{localStorage.setItem('atq4-me',id)}catch(e){}}
+  names=null;                       // personne ne voit les noms réels côté partie
+  $('g-name').textContent=g.name;
+  $('g-lead').textContent=g.lead||'';
+  $('btn-back').style.display=fromAdmin?'':'none';
+  $('g-score').innerHTML='';
+  banner('game-banner',fromAdmin
+    ? 'Vous consultez l\'espace de « '+g.name+' ». Toute action modifiera leur partie.' : '');
+  show('s-game');
+  setPhase(1);
+}
+$('btn-back').onclick=()=>{me=null;asAnimateur=false;openAdmin()};
+$('tab-1').onclick=()=>setPhase(1);
+$('tab-2').onclick=()=>setPhase(2);
+function setPhase(p){
+  st.phase=p; st.sel=null;
+  $('tab-1').style.background = p===1?'var(--accent-soft)':'transparent';
+  $('tab-2').style.background = p===2?'var(--accent-soft)':'transparent';
+  $('roster-title').textContent = 'Agents';
+  render();
+}
+
+function render(){ renderGauges(); renderRoster(); renderPanel(); }
+
+function renderGauges(){
+  const mi=marketIdx(st.alloc), ca=totalCA(st.alloc), dl=ca-BASE_CA;
+  const cr3=CR3_M*mi.cr3*100, aov=AOV_M*mi.aov;
+  $('g-cr3').textContent=pct(cr3); $('g-cr3').className='val num '+(cr3>CR3_M*100?'up':'dn');
+  $('g-aov').textContent=eur(aov); $('g-aov').className='val num '+(aov>AOV_M?'up':'dn');
+  $('g-ca').textContent=mEur(ca);
+  $('g-delta').textContent=signed(dl); $('g-delta').className='sub num '+(dl>=0?'up':'dn');
+  const pl=placedTotal(st.alloc);
+  $('g-slots').textContent=pl; $('g-slots').className='val num '+(pl===TOTAL_CAP?'up':'dn');
+
+  const ag=$('g-agent'), sub=$('g-agentsub'), c3=$('g-acr3'), av=$('g-aaov');
+  const blank=()=>{c3.textContent='—';c3.className='val num';av.textContent='—';av.className='val num'};
+  if(st.sel===null){ag.textContent='—';sub.textContent='aucun';blank();return}
+  const a=AGENTS[st.sel];
+  ag.textContent=gameLabel(a);
+  sub.textContent=used(st.alloc,a.idx)+'/'+DEST.length+' couvertes';
+  const ai=agentIdxLive(a);
+  if(!ai){blank();return}
+  c3.textContent=pct(ai.cr3*100); c3.className='val num '+(ai.cr3>CR3_M?'up':'dn');
+  av.textContent=eur(ai.aov);     av.className='val num '+(ai.aov>AOV_M?'up':'dn');
+}
+
+/* Indices réels d'un agent, pondérés par son allocation du moment.
+   `extra` : destination qu'on envisage d'ajouter (1 slot), pour projeter l'impact. */
+function agentIdxLive(a, extra){
+  let n=0,c=0,v=0;
+  for(const d of DEST){const s=st.alloc[a.idx][d.idx];if(s){n+=s;c+=s*a.ic*d.ic;v+=s*a.ip*d.ip}}
+  if(extra){n++;c+=a.ic*extra.ic;v+=a.ip*extra.ip}
+  return n?{cr3:CR3_M*c/n, aov:AOV_M*v/n}:null;
+}
+
+function renderRoster(){
+  // Toujours tous les agents, dans les deux phases : un agent déjà complet en
+  // phase 2 doit rester consultable et modifiable (retirer un ajout, etc.).
+  const list = AGENTS;
+  $('g-roster').innerHTML=list.map(a=>{
+    const u=used(st.alloc,a.idx);
+    const right = st.phase===1
+      ? (st.retraits[a.idx]||0)+' retirés'
+      : (st.onb[a.idx]?Object.values(st.onb[a.idx]).filter(Boolean).length:0)+'/3 onboardings';
+    return '<button class="arow" data-agent="'+a.idx+'" aria-current="'+(st.sel===a.idx)+'">'+
+      '<span><span class="code">'+esc(gameLabel(a))+'</span>'+
+      '<span class="meta"> · '+u+'/'+DEST.length+' couvertes</span></span>'+
+      '<span class="meta num">'+right+'</span></button>'}).join('');
+}
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-goto]');
+  if(g){setPhase(+g.getAttribute('data-goto'));return}
+  const b=e.target.closest('[data-agent]');
+  if(b){st.sel=+b.getAttribute('data-agent');render()}
+});
+
+function renderPanel(){
+  const box=$('g-panel');
+  if(st.sel===null){
+    box.innerHTML='<div class="empty">'+(st.phase===1
+      ? 'Choisissez un agent pour examiner son portefeuille.<br>Gardez ou retirez librement chacune de ses destinations.'
+      : 'Choisissez un agent pour voir toutes ses destinations.<br>Maximum 3 destinations nouvelles par agent.')+'</div>';
+    return}
+  st.phase===1 ? renderPrune(box) : renderPlace(box);
+}
+
+/* ── Phase 1 : élaguer ── */
+function renderPrune(box){
+  const a=AGENTS[st.sel], r=st.retraits[a.idx]||0;
+  let h='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px">'+
+    '<h3>'+esc(gameLabel(a))+'</h3><div class="hint num">CR3 '+idxChip(a.ic,a.ic.toFixed(2))+
+    ' &nbsp; AOV '+idxChip(a.ip,a.ip.toFixed(2))+' &nbsp; '+r+' retrait'+(r>1?'s':'')+'</div></div>'+
+    '<p class="hint" style="margin:0 0 10px">Toutes les destinations de cet agent, gardées par défaut. Les '+
+    'deux colonnes chiffrées comparent <b>cet agent</b> au marché sur chaque destination — sa conversion réelle '+
+    'puis son panier réel, tous deux du dernier trimestre. Au-dessus de 1, l\'agent fait mieux que le marché. '+
+    '« n/a » = pas de référence marché sur cette destination ; un nombre d\'opportunités réelles très faible '+
+    'rend le chiffre peu fiable.</p>';
+
+  for(const di of a.pf){
+    const d=DEST[di], p=a.pfMap[di];
+    const gone = !!st.cut[a.idx][di], canCut = !gone, canBack = gone && r>0;
+    const swing = BASE[a.idx][di]*slotCA(a,d);
+    h+='<div class="dline">'+
+      '<div><div class="dname">'+esc(d.nom)+'</div><div class="dmeta">'+chipCat(d.cat)+
+        '<span class="num">'+nf.format(p.opps)+' opps réelles</span></div></div>'+
+      '<div class="dnum">'+perfChip(p.saConv,p.mktConv)+'</div>'+
+      '<div class="dnum">'+perfChip(p.saPanier,p.mktPanier)+'</div>'+
+      '<div class="act"><button class="btn sm '+(gone?'':'ghost')+'" data-cut="'+di+'"'+
+        (canCut||canBack?'':' disabled')+'>'+(gone?'Remettre':'Retirer')+'</button>'+
+        '<div class="hint num" style="margin-top:3px">'+
+          (gone?'+ ':'− ')+nf.format(Math.round(swing))+' €</div></div>'+
+      '</div>'}
+  box.innerHTML=h;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-cut]');if(!b)return;
+  const di=+b.getAttribute('data-cut'), ai=st.sel, r=st.retraits[ai]||0;
+  if(!st.cut[ai][di]){
+    st.cut[ai][di]=true; st.alloc[ai][di]=0; st.retraits[ai]=r+1;
+  }else{
+    st.cut[ai][di]=false; st.alloc[ai][di]=BASE[ai][di]; st.retraits[ai]=r-1;
+  }
+  render(); queueSave();
+});
+
+/* Plancher figé d'un agent sur une destination : le niveau hérité du départ,
+   non retirable en phase 2 tant qu'il n'a pas été formellement retiré en phase 1. */
+const floorOf = (a,d)=> (a.pf.includes(d.idx) && !st.cut[a.idx][d.idx]) ? BASE[a.idx][d.idx] : 0;
+
+/* ── Phase 2 : réaffecter ── */
+function renderPlace(box){
+  const a=AGENTS[st.sel], u=used(st.alloc,a.idx);
+  let ob=0; for(const k in st.onb[a.idx]) if(st.onb[a.idx][k]) ob++;
+  let h='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px">'+
+    '<h3>'+esc(gameLabel(a))+'</h3><div class="hint num">couverture : '+u+'/'+DEST.length+
+    ' &nbsp; '+ob+'/3 onboardings</div></div>'+
+    '<p class="hint" style="margin:0 0 10px">Destinations triées par gain pour <b>cet</b> agent. Les deux colonnes '+
+    'chiffrées combinent le calibre de <b>cet agent</b> et le profil de la destination — le CR3 et l\'AOV qu\'il '+
+    'ferait probablement là-bas, pas la moyenne du marché. Au-dessus de la référence marché (21,8 % / 7 690 €) '+
+    'en vert, en dessous en rouge. Sous chaque ligne : le CA que ça rapporterait, et le nombre d\'agents encore '+
+    'possibles à onboarder sur cette destination.</p>';
+  const now=agentIdxLive(a);
+  const rows=DEST.map(d=>({d,v:slotCA(a,d)})).sort((x,y)=>y.v-x.v);
+  for(const {d,v} of rows){
+    const cur=st.alloc[a.idx][d.idx]>0;
+    const taken=AGENTS.reduce((s,x)=>s+st.alloc[x.idx][d.idx],0);
+    const room=d.slots-taken;
+    const isPf=a.pf.includes(d.idx), isOnb=!!st.onb[a.idx][d.idx];
+    const needsOnb = !isPf && !isOnb;
+    const floor = floorOf(a,d)>0;
+    const canAdd = !cur && room>0 && !(needsOnb && ob>=3);
+    const canDrop = cur && !floor;
+    const why = (canAdd||canDrop) ? ''
+      : cur ? 'figé — à retirer en phase 1'
+      : room<=0 ? 'cette destination est déjà à son maximum de postes'
+      : (needsOnb&&ob>=3) ? '3 onboardings atteints' : '';
+    const proj = agentIdxLive(a,d);
+    // Combiné calibre agent × profil destination : ce que CET agent ferait probablement
+    // sur CETTE destination — pas la moyenne du marché, pas la moyenne de son portefeuille.
+    const combCr3 = CR3_M*d.ic*a.ic, combAov = AOV_M*d.ip*a.ip;
+
+    // Impact estimé d'affecter CET agent à CETTE destination
+    let impact='<span><b>'+(v>=0?'+ ':'')+nf.format(Math.round(v))+' €</b> si onboardé ici</span>';
+    if(now&&proj){
+      const dc=proj.cr3-now.cr3, da=proj.aov-now.aov;
+      impact+='<span>portefeuille : CR3 <span class="num">'+pct(now.cr3*100)+'</span> → '+
+        '<span class="num '+(dc>=0?'up':'dn')+'">'+pct(proj.cr3*100)+'</span></span>'+
+        '<span>AOV <span class="num">'+eur(now.aov)+'</span> → '+
+        '<span class="num '+(da>=0?'up':'dn')+'">'+eur(proj.aov)+'</span></span>';
+    }
+    impact+='<span class="'+(room>0?'up':'dn')+'"><b>'+room+'</b> agent'+(room>1?'s':'')+
+      ' encore possible'+(room>1?'s':'')+' sur cette destination</span>';
+    if(needsOnb) impact+='<span>coûterait 1 onboarding — il vous en reste <b>'+(3-ob)+'</b></span>';
+
+    h+='<div class="dline"'+(why&&!cur?' style="opacity:.5"':'')+'>'+
+      '<div><div class="dname">'+esc(d.nom)+
+        (isOnb?' <span class="chip driver">onboardé</span>'
+          :isPf?'':' <span class="chip qmark">nouvelle</span>')+
+        '</div><div class="dmeta">'+chipCat(d.cat)+
+        '<span class="num">'+taken+'/'+d.slots+' agents déjà couverts</span></div></div>'+
+      '<div class="dnum">'+idxChip(combCr3/CR3_M,pct(combCr3*100))+'</div>'+
+      '<div class="dnum">'+idxChip(combAov/AOV_M,eur(combAov))+'</div>'+
+      '<div class="act">'+
+        '<button class="btn sm '+(cur?'':'ghost')+'" data-toggle="'+d.idx+'"'+
+          (canAdd||canDrop?'':' disabled')+'>'+(cur?'Retirer':'Onboarder')+'</button>'+
+        (why?'<div class="hint" style="margin-top:3px">'+why+'</div>':'')+
+      '</div>'+
+      '<div class="dimpact">'+impact+'</div>'+
+    '</div>'}
+  box.innerHTML=h;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-toggle]');if(!b)return;
+  const a=AGENTS[st.sel], di=+b.getAttribute('data-toggle'), d=DEST[di];
+  if(st.alloc[a.idx][di]>0){
+    if(st.alloc[a.idx][di]<=floorOf(a,d))return;
+    st.alloc[a.idx][di]=0;
+    if(st.onb[a.idx][di])st.onb[a.idx][di]=false;
+  }else{
+    const room=d.slots-AGENTS.reduce((s,x)=>s+st.alloc[x.idx][di],0);
+    if(room<=0)return;
+    if(!a.pf.includes(di)&&!st.onb[a.idx][di]){
+      let ob=0;for(const k in st.onb[a.idx])if(st.onb[a.idx][k])ob++;
+      if(ob>=3)return;
+      st.onb[a.idx][di]=true}
+    st.alloc[a.idx][di]=1;
+  }
+  render(); queueSave();
+});
+
+/* ── comparaison de fin de partie : par destination, vous vs la référence ── */
+function renderComparison(){
+  const rows=DEST.map((d,k)=>{
+    let n=0,c=0,v=0,ca=0;
+    for(const a of AGENTS){const s=st.alloc[a.idx][d.idx];
+      if(s){n+=s;c+=s*a.ic;v+=s*a.ip;ca+=s*slotCA(a,d)}}
+    const [rIc,rIp,rCa]=REF_DEST[k];
+    return {d,ic:n?c/n:0,ip:n?v/n:0,ca,rIc,rIp,rCa,gap:ca-rCa};
+  }).sort((x,y)=>x.gap-y.gap);
+  return '<div class="card" style="margin-top:14px">'+
+    '<h2 style="margin-bottom:11px">Comparaison par destination — votre équipe vs la référence</h2>'+
+    '<p class="hint" style="margin:0 0 11px">Triées par écart, du plus coûteux au plus favorable. '+
+    '« Vous » = qualité moyenne des agents que vous y avez placés (indice CR3 et AOV) ; « Réf. » = la solution optimale.</p>'+
+    '<div class="scroll-x"><table><thead><tr><th>Destination</th><th>CR3 vous</th><th>CR3 réf.</th>'+
+    '<th>AOV vous</th><th>AOV réf.</th><th>Écart de CA</th></tr></thead><tbody>'+
+    rows.map(x=>{
+      const cr3v=CR3_M*x.ic*100, cr3r=CR3_M*x.rIc*100, aovv=AOV_M*x.ip, aovr=AOV_M*x.rIp;
+      return '<tr><td style="font-weight:600">'+esc(x.d.nom)+'</td>'+
+        '<td class="num">'+(x.ic?pct(cr3v):'—')+'</td><td class="num hint">'+pct(cr3r)+'</td>'+
+        '<td class="num">'+(x.ip?eur(aovv):'—')+'</td><td class="num hint">'+eur(aovr)+'</td>'+
+        '<td class="num '+(x.gap>=0?'up':'dn')+'" style="font-weight:600">'+signed(x.gap)+'</td></tr>';
+    }).join('')+'</tbody></table></div></div>';
+}
+
+/* ── validation ── */
+$('btn-finish').onclick=()=>{
+  const pl=placedTotal(st.alloc), ca=totalCA(st.alloc), sc=scoreOf(ca);
+  if(pl!==TOTAL_CAP){
+    $('g-score').innerHTML='<div class="card" style="margin-top:14px"><div class="empty">'+
+      'Répartition incomplète : <b class="num">'+pl+'</b> sur '+TOTAL_CAP+' réparties. '+
+      'Le score s\'affiche une fois les '+TOTAL_CAP+' réparties.</div></div>';
+    $('g-score').scrollIntoView({behavior:'smooth',block:'nearest'});return}
+  me.done=true;
+  const verdict = sc<0?'Vous avez détruit de la valeur — bouger sans arbitrer coûte de l\'argent.'
+    : sc<25?'Gain modeste. Les plus gros écarts se jouent sur les destinations à fort panier.'
+    : sc<60?'Bon arbitrage. Une partie du gisement reste sur la table.'
+    : sc<90?'Très bon arbitrage.' : 'Quasi-optimal.';
+  $('g-score').innerHTML='<div class="scorebox"><div class="hint">Score</div>'+
+    '<div class="big">'+sc.toFixed(0)+' %</div>'+
+    '<div class="num" style="font-weight:600;margin:6px 0">'+mEur(ca)+' &nbsp;·&nbsp; '+signed(ca-BASE_CA)+'</div>'+
+    '<div class="hint" style="max-width:44ch;margin:0 auto">'+verdict+'</div></div>'+
+    renderComparison();
+  $('g-score').scrollIntoView({behavior:'smooth',block:'nearest'});
+  queueSave();
+};
+$('btn-reset').onclick=()=>{
+  st=freshState(); me.done=false; $('g-score').innerHTML=''; setPhase(1); queueSave();
+};
+$('btn-names').onclick=()=>{
+  gameNamesOn=!gameNamesOn;
+  $('btn-names').textContent = gameNamesOn ? 'Masquer les noms' : 'Afficher les noms';
+  render();
+};
+$('btn-random').onclick=()=>{
+  const roomOf=d=>d.slots-AGENTS.reduce((s,x)=>s+st.alloc[x.idx][d.idx],0);
+  const obCount=a=>{let n=0;for(const k in st.onb[a.idx])if(st.onb[a.idx][k])n++;return n};
+  const shuffled=arr=>{const c=[...arr];for(let i=c.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[c[i],c[j]]=[c[j],c[i]]}return c};
+  /* Passe systématique plutôt qu'un tirage au sort naïf : sur un élagage maximal
+     (2 retraits par agent partout), un pur hasard peut tourner longtemps sans
+     jamais retomber sur la dernière combinaison valide. Ici on boucle par
+     agent jusqu'à ce qu'aucun agent ne puisse plus rien placer (point fixe) —
+     ce qui ne laisse un slot en rade que si le blocage est réel. */
+  let progress=true;
+  while(placedTotal(st.alloc)<TOTAL_CAP && progress){
+    progress=false;
+    for(const a of shuffled(AGENTS)){
+      while(used(st.alloc,a.idx)<a.slots){
+        const ob=obCount(a);
+        const opts=DEST.filter(d=>{
+          if(roomOf(d)<=0)return false;
+          const isKnown=a.pf.includes(d.idx)||st.onb[a.idx][d.idx];
+          return isKnown || ob<3;
+        });
+        if(!opts.length)break;
+        const d=opts[Math.floor(Math.random()*opts.length)];
+        if(!a.pf.includes(d.idx)&&!st.onb[a.idx][d.idx]) st.onb[a.idx][d.idx]=true;
+        st.alloc[a.idx][d.idx]++;
+        progress=true;
+      }
+    }
+  }
+  render(); queueSave();
+};
+</script>
