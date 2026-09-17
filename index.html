@@ -229,7 +229,6 @@ input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:tra
     <div class="brand"><h1 id="g-name">—</h1><span id="g-lead"></span></div>
     <div class="tools">
       <button class="btn ghost sm" id="btn-back" style="display:none">← Pilotage</button>
-      <button class="btn ghost sm" id="btn-reset">Recommencer</button>
       <button class="btn sm" id="btn-finish">Valider la répartition</button>
     </div>
   </div>
@@ -541,11 +540,6 @@ const $ = id=>document.getElementById(id);
 const show = id=>{for(const s of document.querySelectorAll('.screen'))s.classList.remove('on');$(id).classList.add('on')};
 const agentLabel = a=> (names&&names[a.code]) ? names[a.code] : a.code;
 const gameLabel = a=> namesGlobalOn ? (LOCAL_NAMES[a.code]||a.code) : a.code;
-
-function freshState(){
-  const s={alloc:decAlloc(encAlloc(BASE)),retraits:{},onb:{},cut:{},phase:1,sel:null};
-  for(const a of AGENTS){s.retraits[a.idx]=0;s.onb[a.idx]={};s.cut[a.idx]={}}
-  return s}
 
 function stateFromDoc(g){
   const stale = g.dataVersion!==DATA_VERSION;
@@ -1166,8 +1160,5 @@ $('btn-finish').onclick=()=>{
     renderComparison();
   $('g-score').scrollIntoView({behavior:'smooth',block:'nearest'});
   queueSave();
-};
-$('btn-reset').onclick=()=>{
-  st=freshState(); me.done=false; $('g-score').innerHTML=''; setPhase(1); queueSave();
 };
 </script>
