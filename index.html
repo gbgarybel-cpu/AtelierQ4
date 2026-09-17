@@ -735,7 +735,9 @@ $('btn-export').onclick=()=>{
 
 $('btn-newgroup').onclick=()=>{$('ng-name').focus()};
 
+let addingGroup=false;
 async function addGroup(){
+  if(addingGroup)return;
   const nameEl=$('ng-name'), leadEl=$('ng-lead');
   const name=nameEl.value.trim();
   if(!name){nameEl.placeholder='Nom requis';nameEl.focus();return}
@@ -743,8 +745,12 @@ async function addGroup(){
   nameEl.value='';leadEl.value='';nameEl.placeholder='Nom de l\'équipe';nameEl.focus();
   const id='g'+Date.now().toString(36);
   adminSel=id;
+  addingGroup=true;
+  $('ng-add').disabled=true; $('ng-add').textContent='Ajout…';
   await pushGroup({id,name,lead,allocStr:encAlloc(BASE),
     retraits:'',onb:'',ca:BASE_CA,score:null,done:false});
+  addingGroup=false;
+  $('ng-add').disabled=false; $('ng-add').textContent='Ajouter';
   renderAdmin(); renderGatePicker();
 }
 $('ng-add').onclick=addGroup;
