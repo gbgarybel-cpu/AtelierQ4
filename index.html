@@ -192,6 +192,15 @@ input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:tra
     <div class="gauge"><span class="lab">Mise à jour</span><span class="val num" id="ad-stamp" style="font-size:15px">—</span><span class="sub hint">en direct</span></div>
   </div>
 
+  <div class="instr">
+    <div class="gauge" style="background:var(--raised)"><span class="lab">Plus gros CA (BV)</span>
+      <span class="val num" id="ad-lead-ca" style="font-size:16px">—</span><span class="sub hint" id="ad-lead-ca-team">aucune équipe</span></div>
+    <div class="gauge" style="background:var(--raised)"><span class="lab">Meilleur CR3</span>
+      <span class="val num" id="ad-lead-cr3" style="font-size:16px">—</span><span class="sub hint" id="ad-lead-cr3-team">aucune équipe</span></div>
+    <div class="gauge" style="background:var(--raised);border-right:0"><span class="lab">Meilleur AOV</span>
+      <span class="val num" id="ad-lead-aov" style="font-size:16px">—</span><span class="sub hint" id="ad-lead-aov-team">aucune équipe</span></div>
+  </div>
+
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px">
       <h2 style="margin:0">Classement — par CA généré</h2>
@@ -768,6 +777,18 @@ function renderAdmin(){
   $('ad-gisement').textContent=eur(GISEMENT);
   $('ad-count').textContent=groups.length;
   $('ad-stamp').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const withMetrics=groups.filter(g=>g.allocStr).map(g=>{
+    const mi=marketIdx(decAlloc(g.allocStr));
+    return {g,ca:g.ca||BASE_CA,cr3:CR3_M*mi.cr3*100,aov:AOV_M*mi.aov};
+  });
+  const bestOf=key=>withMetrics.length?withMetrics.reduce((a,b)=>b[key]>a[key]?b:a):null;
+  const bCA=bestOf('ca'), bCR3=bestOf('cr3'), bAOV=bestOf('aov');
+  $('ad-lead-ca').textContent=bCA?mEur(bCA.ca):'—';
+  $('ad-lead-ca-team').textContent=bCA?bCA.g.name:'aucune équipe';
+  $('ad-lead-cr3').textContent=bCR3?pct(bCR3.cr3):'—';
+  $('ad-lead-cr3-team').textContent=bCR3?bCR3.g.name:'aucune équipe';
+  $('ad-lead-aov').textContent=bAOV?eur(bAOV.aov):'—';
+  $('ad-lead-aov-team').textContent=bAOV?bAOV.g.name:'aucune équipe';
   const ranked=[...groups].sort((a,b)=>(b.ca||BASE_CA)-(a.ca||BASE_CA));
   $('ad-board').innerHTML = ranked.length ? ranked.map((g,i)=>{
     const ca=g.ca||BASE_CA, dl=ca-BASE_CA, al=decAlloc(g.allocStr);
