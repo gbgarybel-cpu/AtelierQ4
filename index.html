@@ -274,7 +274,7 @@ const ADMIN_CODE = 'atelier2024';
 /* Change ce numéro à chaque fois que le modèle de données change (agents/destinations/
    unité de capacité). Une partie sauvegardée sous un autre numéro est ignorée au
    chargement plutôt que de réinjecter des valeurs incompatibles. */
-const DATA_VERSION = 'postes-v7-revenu-quarter';
+const DATA_VERSION = 'postes-v8-cibles-n-1';
 const LOCAL_NAMES = {"A01":"Alexandra Mennechez","A02":"Alexandre Paprocki","A03":"Alice Saint-Jean","A04":"Amandine Godin","A05":"Antoine Revardeau","A06":"Aurelie Guesnet","A07":"Bertrand Cazabat","A08":"Camille Lecomte","A10":"Charline Blas","A11":"Charline Verdeaux","A12":"Charlotte Garrido","A13":"Chloé Solanki","A14":"Claire Henry","A15":"Claire Lardenois","A16":"Clement Thonneau","A17":"Constant Le Dantec","A18":"Edwige Clad","A19":"Elise Francois","A20":"Ella Thevenet","A21":"Eloïse Lebert","A22":"Emilie Belguise","A23":"Emy Chomon","A24":"Fabienne Pottelain","A25":"Fanny Mangin","A26":"Fiona Tandar","A27":"Guillaume Dupont","A28":"Helene Ristic","A29":"Joumala ElAlaoui","A30":"Juliette Cazes","A31":"Lauren Lebreton","A32":"Laurine Ghis","A34":"Line Desmazures","A35":"Lucie Collado","A36":"Malek Adjroud","A37":"Marceau Cattin","A38":"Margot Bonnet","A39":"Marine Hecquard","A40":"Marion Hucbourg Hernandez","A41":"Marion-Ambroisine QUINARD","A42":"Melissa Braun","A43":"Mila Gascoin","A44":"Oceane Sabeur","A45":"Pauline Preynat","A46":"Philippe Tkatchouk","A47":"Samantha Philippon-joubert","A48":"Scarlett Vis","A49":"Thibaut Brachet","A50":"Thomas Guibert","A51":"Valerie Aleksandrowicz","A52":"Victoria Nouchi","A53":"Yann Magueur","A54":"Zoe Morales"};
 
 /* [nom, opps_6mois_reels, postes_besoin, categorie, indice_conversion, indice_panier] — postes_besoin
@@ -434,15 +434,20 @@ function marketIdx(al){let n=0,c=0,v=0;
    encodée en agent.destination.1, pas de quantité). */
 const BASE_ENC = "0.1.1~0.3.1~0.7.1~0.8.1~0.21.1~0.26.1~1.5.1~1.10.1~1.15.1~1.32.1~1.33.1~2.1.1~2.5.1~2.12.1~2.22.1~2.32.1~3.5.1~3.8.1~3.11.1~3.12.1~3.23.1~3.25.1~3.30.1~4.1.1~4.5.1~4.20.1~4.31.1~4.32.1~5.5.1~5.8.1~5.10.1~5.12.1~5.15.1~5.21.1~5.24.1~5.32.1~5.33.1~6.2.1~6.12.1~6.15.1~6.16.1~6.22.1~6.28.1~6.29.1~6.31.1~6.33.1~7.4.1~7.5.1~7.10.1~7.12.1~7.18.1~7.28.1~7.29.1~7.34.1~8.0.1~8.6.1~8.8.1~8.13.1~8.17.1~8.32.1~8.33.1~9.1.1~9.4.1~9.5.1~9.8.1~9.11.1~9.21.1~9.24.1~9.26.1~10.15.1~10.16.1~10.22.1~10.29.1~10.31.1~10.33.1~11.4.1~11.12.1~11.13.1~11.19.1~11.22.1~11.28.1~11.30.1~11.32.1~11.33.1~11.34.1~12.5.1~12.10.1~12.24.1~12.29.1~12.33.1~12.34.1~13.5.1~13.8.1~13.12.1~13.13.1~14.0.1~14.1.1~14.3.1~14.4.1~14.13.1~14.17.1~14.18.1~14.27.1~14.30.1~14.32.1~14.34.1~15.0.1~15.3.1~15.5.1~15.6.1~15.7.1~15.12.1~15.26.1~16.8.1~16.10.1~16.12.1~16.13.1~16.32.1~17.5.1~17.10.1~17.14.1~17.15.1~17.21.1~17.25.1~17.33.1~18.5.1~18.10.1~18.12.1~18.19.1~18.30.1~18.33.1~19.8.1~19.12.1~19.15.1~19.19.1~19.30.1~19.34.1~20.3.1~20.5.1~20.12.1~20.15.1~20.22.1~20.32.1~21.3.1~21.5.1~21.9.1~21.10.1~21.12.1~21.14.1~21.33.1~22.3.1~22.5.1~22.12.1~22.19.1~22.20.1~22.27.1~22.29.1~22.32.1~22.33.1~23.5.1~23.8.1~23.12.1~23.13.1~23.16.1~23.17.1~23.22.1~23.31.1~23.32.1~24.5.1~24.21.1~24.22.1~24.29.1~24.33.1~25.0.1~25.3.1~25.4.1~25.5.1~25.6.1~25.7.1~25.8.1~25.9.1~25.11.1~25.26.1~25.33.1~25.34.1~26.0.1~26.3.1~26.6.1~26.7.1~26.8.1~26.15.1~26.21.1~26.26.1~26.29.1~26.32.1~27.1.1~27.3.1~27.5.1~27.10.1~27.16.1~27.19.1~27.28.1~27.31.1~27.33.1~28.10.1~28.12.1~28.13.1~28.15.1~29.5.1~29.8.1~29.29.1~29.33.1~30.2.1~30.21.1~30.22.1~30.23.1~30.25.1~30.27.1~30.29.1~31.5.1~31.11.1~31.12.1~31.13.1~31.18.1~31.24.1~31.33.1~32.0.1~32.1.1~32.3.1~32.6.1~32.13.1~32.23.1~32.26.1~32.27.1~32.29.1~32.31.1~33.0.1~33.3.1~33.8.1~33.10.1~33.12.1~33.30.1~34.5.1~34.10.1~34.31.1~34.32.1~34.34.1~35.5.1~35.8.1~35.12.1~35.27.1~35.29.1~35.30.1~35.33.1~36.3.1~36.5.1~36.7.1~36.8.1~36.12.1~36.21.1~36.28.1~37.12.1~37.15.1~37.24.1~37.30.1~38.5.1~38.29.1~38.33.1~39.10.1~39.13.1~39.15.1~39.17.1~39.23.1~39.26.1~39.28.1~39.32.1~40.5.1~40.22.1~40.27.1~40.31.1~40.33.1~41.3.1~41.8.1~41.10.1~41.12.1~41.13.1~41.15.1~41.18.1~41.20.1~41.21.1~41.28.1~41.32.1~42.0.1~42.6.1~42.8.1~42.29.1~42.31.1~43.8.1~43.13.1~43.15.1~43.29.1~43.31.1~43.32.1~44.0.1~44.4.1~44.6.1~44.8.1~44.13.1~44.15.1~44.24.1~44.26.1~44.31.1~44.34.1~45.5.1~45.11.1~45.13.1~45.15.1~45.23.1~45.24.1~45.33.1~46.5.1~46.8.1~46.27.1~46.32.1~46.33.1~47.5.1~47.10.1~47.12.1~47.14.1~47.22.1~47.24.1~47.31.1~47.33.1~48.2.1~48.12.1~48.16.1~48.22.1~48.29.1~48.31.1~48.33.1~49.5.1~49.8.1~49.10.1~49.13.1~50.5.1~50.8.1~50.13.1~50.19.1~50.21.1~50.30.1~50.33.1~51.5.1~51.12.1~51.24.1~51.29.1~51.31.1";
 const BASE = decAlloc(BASE_ENC);
-/* Bonus de capacité d'onboarding pour les destinations Star : elles ouvrent
-   davantage de places que les autres catégories (x1.5 de marge en plus par
-   rapport à leur cible Q1, arrondi au-dessus, +1 minimum) — le nombre d'agents
-   déjà réellement onboardés, lui, ne change pas. */
+/* Cible d'agents par destination : nombre réel d'agents actifs par destination
+   lors de la réallocation de l'an dernier (Destination_Capacity_Reallocation),
+   remis à l'échelle sur la croissance d'effectif actif (94 → 97,4 FTE, janvier à
+   janvier), avec un bonus d'ambition supplémentaire sur les destinations Star
+   pour pouvoir vraiment y concentrer les meilleurs agents via l'onboarding —
+   jamais en dessous du nombre d'agents réellement en poste aujourd'hui. */
+const FTE_GROWTH = 97.4/94;
+const STAR_AMBITION = 1.15;
+const LAST_YEAR_TARGET = [11,7,4,9,8,27,8,6,21,4,14,5,31,15,6,12,5,2,4,4,2,7,15,5,16,3,10,5,9,18,9,12,26,25,10];
 for(const d of DEST){
-  if(d.cat!=='Star')continue;
   const held=AGENTS.reduce((s,a)=>s+(BASE[a.idx][d.idx]||0),0);
-  const origRoom=Math.max(0,d.slots-held);
-  d.slots=held+Math.max(origRoom+1,Math.ceil(origRoom*1.5));
+  let scaled=Math.round(LAST_YEAR_TARGET[d.idx]*FTE_GROWTH);
+  if(d.cat==='Star')scaled=Math.max(scaled+1,Math.ceil(scaled*STAR_AMBITION));
+  d.slots=Math.max(scaled,held);
 }
 const BASE_CA = totalCA(BASE);
 const TOTAL_CAP = AGENTS.reduce((s,a)=>s+a.slots,0);
@@ -454,45 +459,46 @@ const TOTAL_CAP = AGENTS.reduce((s,a)=>s+a.slots,0);
    chaque agent — par CA réel observé ramené au trimestre — puis on comble par gain
    marginal décroissant : postes réels valorisés à leur CA réel /2 (6 mois → un
    trimestre), postes onboardés par le modèle des 70 opps/mois répartis sur les
-   destinations de l'agent, sous les mêmes règles que le jeu, y compris le bonus
-   de capacité Star) : [indice_conversion moyen pondéré, indice_panier moyen
-   pondéré, CA généré] par destination, pour l'écran de comparaison de fin de partie. */
+   destinations de l'agent, sous les mêmes règles que le jeu, y compris les cibles
+   d'agents par destination de l'an dernier remises à l'échelle) : [indice_conversion
+   moyen pondéré, indice_panier moyen pondéré, CA généré] par destination, pour
+   l'écran de comparaison de fin de partie. */
 const REF_DEST = [
-[1.0238,0.9685,847563],
-[0.9721,1.0889,1340221],
-[0.9563,0.9958,419636],
-[0.9376,1.0871,379855],
-[1.0827,1.16,55447],
-[0.9754,1.0076,937545],
-[0.9418,1.0046,140195],
+[1.015,0.985,888868],
+[0.9239,1.0444,529390],
+[0.9055,0.999,248560],
+[0.9269,1.0788,488073],
+[1.045,0.985,363582],
+[0.9523,1.0082,1254761],
+[0.9637,1.0764,474490],
 [1.1467,1.029,52741],
-[0.949,0.9844,906561],
-[1.0187,1.0377,181452],
-[1.0536,1.0489,1773474],
+[1.0149,1.0015,1023187],
+[1.057,1.185,312434],
+[1.0123,1.0268,1363695],
 [1.0448,0.9494,211426],
 [1.0348,1.0455,422281],
 [0.9472,1.018,154075],
 [0.943,1.0085,72470],
-[1.0471,0.9929,1433064],
-[0.9508,1.1162,569199],
-[0.605,0.908,0],
+[1.0275,0.9955,929329],
+[1.0498,1.1122,334674],
+[0.759,0.9475,145406],
 [0.8843,0.9807,24923],
-[1.03,1.0166,538478],
+[1.0692,1.076,332432],
 [0.9315,1.079,28971],
-[0.9659,1.0611,207070],
-[0.9383,1.0153,1097107],
-[0.9669,1.0163,384379],
+[0.9734,1.0693,277486],
+[1.0639,1.0182,1285186],
+[0.975,1.0308,156021],
 [1.0075,0.9866,480843],
-[1.0465,1.047,790013],
-[0.9664,0.9937,397101],
+[1.045,1.0823,624486],
+[1.042,1.0076,575178],
 [0.7535,1.0145,16357],
-[0.9815,1.149,255276],
-[1.0553,1.0304,462056],
+[0.9729,1.0848,354417],
+[1.0177,1.0241,571941],
 [1.0764,0.9812,185564],
-[1.0085,1.0171,2133956],
+[0.9461,1.0485,1239395],
 [0.9383,0.9714,531043],
-[0.994,1.0467,1051584],
-[1.041,1.044,165658]
+[0.9862,1.0285,1176031],
+[0.9638,1.0214,264547]
 ];
 const CA_REF = REF_DEST.reduce((s,r)=>s+r[2],0);
 const GISEMENT = CA_REF-BASE_CA;
