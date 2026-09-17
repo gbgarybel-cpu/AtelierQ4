@@ -289,7 +289,7 @@ const ADMIN_CODE = 'atelier2024';
 /* Change ce numéro à chaque fois que le modèle de données change (agents/destinations/
    unité de capacité). Une partie sauvegardée sous un autre numéro est ignorée au
    chargement plutôt que de réinjecter des valeurs incompatibles. */
-const DATA_VERSION = 'postes-v10-indices-recalcules';
+const DATA_VERSION = 'postes-v11-panier-fiable';
 const LOCAL_NAMES = {"A01":"Alexandra Mennechez","A02":"Alexandre Paprocki","A03":"Alice Saint-Jean","A04":"Amandine Godin","A05":"Antoine Revardeau","A06":"Aurelie Guesnet","A07":"Bertrand Cazabat","A08":"Camille Lecomte","A10":"Charline Blas","A11":"Charline Verdeaux","A12":"Charlotte Garrido","A13":"Chloé Solanki","A14":"Claire Henry","A15":"Claire Lardenois","A16":"Clement Thonneau","A17":"Constant Le Dantec","A18":"Edwige Clad","A19":"Elise Francois","A20":"Ella Thevenet","A21":"Eloïse Lebert","A22":"Emilie Belguise","A23":"Emy Chomon","A24":"Fabienne Pottelain","A25":"Fanny Mangin","A26":"Fiona Tandar","A27":"Guillaume Dupont","A28":"Helene Ristic","A29":"Joumala ElAlaoui","A30":"Juliette Cazes","A32":"Laurine Ghis","A34":"Line Desmazures","A35":"Lucie Collado","A36":"Malek Adjroud","A37":"Marceau Cattin","A38":"Margot Bonnet","A39":"Marine Hecquard","A40":"Marion Hucbourg Hernandez","A42":"Melissa Braun","A43":"Mila Gascoin","A44":"Oceane Sabeur","A45":"Pauline Preynat","A46":"Philippe Tkatchouk","A47":"Samantha Philippon-joubert","A48":"Scarlett Vis","A49":"Thibaut Brachet","A50":"Thomas Guibert","A51":"Valerie Aleksandrowicz","A52":"Victoria Nouchi","A53":"Yann Magueur","A54":"Zoe Morales"};
 
 /* [nom, opps_6mois_reels, postes_besoin, categorie, indice_conversion, indice_panier] — postes_besoin
@@ -430,7 +430,15 @@ function decOnb(s){const o={};for(const a of AGENTS)o[a.idx]={};
      en reçoit). Le CR3 et l'AOV utilisés sont ceux de CET agent sur CETTE
      destination (son indice appliqué à la moyenne marché de la destination). */
 const AGENT_QUARTER_OPPS = 70*3; // 70 opps/mois en haute saison, sur un trimestre
-const heldSlotCA = (a,d)=>{ const p=a.pfMap[d.idx]; return p ? (p.opps*p.saConv*p.saPanier)/2 : 0; };
+/* Panier réel < 500 € avec conversion > 0 : artefact du système source (vérifié sur
+   l'export brut — ex. Emy Chomon/Iceland et Joumala ElAlaoui/Maldives affichent
+   littéralement un panier de "1 €" pour 1 réservation), pas un vrai petit panier de
+   voyage. On retombe sur le panier marché de la destination plutôt que de propager
+   un chiffre absurde — 2 paires concernées sur 349. */
+const PANIER_MIN_FIABLE = 500;
+const heldSlotCA = (a,d)=>{ const p=a.pfMap[d.idx]; if(!p) return 0;
+  const panier = (p.saPanier>0 && p.saPanier<PANIER_MIN_FIABLE) ? p.mktPanier : p.saPanier;
+  return (p.opps*p.saConv*panier)/2; };
 const onbSlotCA = (a,d,destCount)=> CR3_M*d.ic*a.ic * AOV_M*d.ip*a.ip * (AGENT_QUARTER_OPPS/Math.max(destCount,1));
 const used = (al,ai)=>{let n=0;for(const d of DEST)n+=al[ai][d.idx];return n};
 const seatCA = (al,a,d)=> BASE[a.idx][d.idx]>0 ? heldSlotCA(a,d) : onbSlotCA(a,d,used(al,a.idx));
