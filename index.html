@@ -379,6 +379,12 @@ const AGENTS = AGENTS_RAW.map((r,i)=>{
   return {idx:i,code:r[0],ic:r[1],ip:r[2],slots:r[3],
     pf:rows.map(x=>x.dest),pfMap:Object.fromEntries(rows.map(x=>[x.dest,x]))};
 });
+/* Ordre d'affichage du roster : mélangé une fois par chargement de page (pas par
+   ordre alphabétique), sans toucher à AGENTS lui-même — les autres parties du jeu
+   indexent les agents par a.idx, qui doit rester stable. */
+const AGENTS_SHUFFLED = (arr=>{const c=[...arr];
+  for(let i=c.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[c[i],c[j]]=[c[j],c[i]]}
+  return c})(AGENTS);
 
 /* ═══════════ ENCODAGE COMPACT (documents < 256 Kio) ═══════════ */
 function encAlloc(al){const p=[];for(const a of AGENTS)for(const d of DEST){
@@ -914,7 +920,8 @@ function agentIdxLive(a, extra){
 function renderRoster(){
   // Toujours tous les agents, dans les deux phases : un agent déjà complet en
   // phase 2 doit rester consultable et modifiable (retirer un ajout, etc.).
-  const list = AGENTS;
+  // Ordre mélangé (AGENTS_SHUFFLED), pas alphabétique.
+  const list = AGENTS_SHUFFLED;
   $('g-roster').innerHTML=list.map(a=>{
     const u=used(st.alloc,a.idx);
     const right = st.phase===1
