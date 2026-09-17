@@ -212,7 +212,7 @@ input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:tra
     </div>
     <div class="scroll-x"><table class="rows">
       <thead><tr><th>#</th><th>Équipe</th><th>Team lead</th><th>CA</th><th>Δ vs départ</th>
-        <th>Score</th><th>Arbitrages</th><th>Postes</th><th>État</th><th>Espace</th></tr></thead>
+        <th>Score</th><th>CR3</th><th>AOV</th><th>Arbitrages</th><th>Postes</th><th>État</th><th>Espace</th></tr></thead>
       <tbody id="ad-board"></tbody>
     </table></div>
   </div>
@@ -775,10 +775,17 @@ function renderAdmin(){
   $('ad-gisement').textContent=eur(GISEMENT);
   $('ad-count').textContent=groups.length;
   $('ad-stamp').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  const withMetrics=groups.filter(g=>g.allocStr).map(g=>{
-    const mi=marketIdx(decAlloc(g.allocStr));
-    return {g,ca:g.ca||BASE_CA,cr3:CR3_M*mi.cr3*100,aov:AOV_M*mi.aov};
-  });
+  /* Une sauvegarde d'équipe écrite sous un ancien modèle de données (dataVersion
+     différent) est traitée comme fraîche pour l'affichage plutôt que décodée
+     avec la structure actuelle — sinon les chiffres n'ont plus de sens. */
+  const isStale=g=>g.allocStr&&g.dataVersion!==DATA_VERSION;
+  const metricsOf=g=>{
+    const stale=isStale(g);
+    const al=stale?BASE:decAlloc(g.allocStr);
+    const mi=marketIdx(al);
+    return {ca:stale?BASE_CA:(g.ca||BASE_CA),cr3:CR3_M*mi.cr3*100,aov:AOV_M*mi.aov,al,stale};
+  };
+  const withMetrics=groups.filter(g=>g.allocStr&&!isStale(g)).map(g=>({g,...metricsOf(g)}));
   const bestOf=key=>withMetrics.length?withMetrics.reduce((a,b)=>b[key]>a[key]?b:a):null;
   const bCA=bestOf('ca'), bCR3=bestOf('cr3'), bAOV=bestOf('aov');
   $('ad-lead-ca').textContent=bCA?mEur(bCA.ca):'—';
@@ -789,10 +796,12 @@ function renderAdmin(){
   $('ad-lead-aov-team').textContent=bAOV?bAOV.g.name:'aucune équipe';
   const ranked=[...groups].sort((a,b)=>(b.ca||BASE_CA)-(a.ca||BASE_CA));
   $('ad-board').innerHTML = ranked.length ? ranked.map((g,i)=>{
-    const ca=g.ca||BASE_CA, dl=ca-BASE_CA, al=decAlloc(g.allocStr);
-    const rs=Object.values(decMapN(g.retraits)).reduce((s,v)=>s+v,0);
-    const os=(g.onb||'').split('~').filter(Boolean).length;
-    const state=g.done?'<span class="chip done">Validé</span>'
+    const {ca,cr3,aov,al,stale}=metricsOf(g);
+    const dl=ca-BASE_CA;
+    const rs=stale?0:Object.values(decMapN(g.retraits)).reduce((s,v)=>s+v,0);
+    const os=stale?0:(g.onb||'').split('~').filter(Boolean).length;
+    const state=stale?'<span class="chip idle">En attente</span>'
+      :g.done?'<span class="chip done">Validé</span>'
       :(g.allocStr&&g.allocStr!==encAlloc(BASE))?'<span class="chip live">En cours</span>'
       :'<span class="chip idle">En attente</span>';
     return '<tr data-grp="'+esc(g.id)+'" aria-selected="'+(adminSel===g.id)+'">'+
@@ -802,13 +811,15 @@ function renderAdmin(){
       '<td class="num" style="font-weight:600">'+mEur(ca)+'</td>'+
       '<td class="num '+(dl>=0?'up':'dn')+'" style="font-weight:600">'+signed(dl)+'</td>'+
       '<td class="num" style="font-weight:600">'+scoreOf(ca).toFixed(0)+' %</td>'+
+      '<td class="num">'+pct(cr3)+'</td>'+
+      '<td class="num">'+eur(aov)+'</td>'+
       '<td class="hint num">'+rs+' retraits · '+os+' onb.</td>'+
       '<td class="num hint">'+placedTotal(al)+'/'+TOTAL_CAP+'</td>'+
       '<td>'+state+'</td>'+
       '<td style="display:flex;gap:5px"><button class="btn sm ghost" data-open="'+esc(g.id)+'">Ouvrir</button>'+
       '<button class="btn sm ghost" data-copylink="'+esc(g.id)+'">Copier le lien</button>'+
       '<button class="btn sm ghost" data-delete="'+esc(g.id)+'" style="color:var(--loss)">Supprimer</button></td></tr>'}).join('')
-    : '<tr><td colspan="10" class="empty">Aucune équipe pour l\'instant — ajoutez-en une ci-dessus.</td></tr>';
+    : '<tr><td colspan="12" class="empty">Aucune équipe pour l\'instant — ajoutez-en une ci-dessus.</td></tr>';
   renderAdminDetail();
 }
 document.addEventListener('click',e=>{
