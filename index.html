@@ -676,14 +676,6 @@ async function fetchGroups(){
     await fetchGroups();
     setInterval(fetchGroups,3000);
   }
-  /* Reprise automatique de la dernière équipe jouée sur ce poste — mais seulement
-     si on n'est pas déjà entré en pilotage ou dans une équipe entre-temps : le
-     fetch initial peut prendre plusieurs secondes (cold-start du backend), le
-     temps que l'animateur se connecte au pilotage avant que ce bloc s'exécute. */
-  if(!teamParam && !adminMode && !me){
-    const saved=localStorage.getItem('atq4-me');
-    if(saved){const g=groups.find(x=>x.id===saved);if(g)joinGroup(saved)}
-  }
 })();
 
 /* ═══════════ GATE ═══════════ */
@@ -919,8 +911,6 @@ function joinGroup(id,fromAdmin){
   me={id:g.id,name:g.name,lead:g.lead,done:!!g.done};
   st=stateFromDoc(g);
   asAnimateur=!!fromAdmin;
-  // L'animateur qui consulte ne doit pas être ré-aiguillé vers cette équipe au rechargement
-  if(!fromAdmin){try{localStorage.setItem('atq4-me',id)}catch(e){}}
   names=null;                       // personne ne voit les noms réels côté partie
   $('g-name').textContent=g.name;
   $('g-lead').textContent=g.lead||'';
