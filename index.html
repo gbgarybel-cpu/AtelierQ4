@@ -570,6 +570,10 @@ function stateFromDoc(g){
 function localSave(){try{localStorage.setItem('atq4',JSON.stringify(groups))}catch(e){}}
 function localLoad(){try{groups=JSON.parse(localStorage.getItem('atq4')||'[]')}catch(e){groups=[]}}
 
+let pendingSaves=0;
+window.addEventListener('beforeunload',e=>{
+  if(pendingSaves>0){ e.preventDefault(); e.returnValue=''; }
+});
 async function pushGroup(g){
   const body={kind:'group',id:g.id,name:g.name,lead:g.lead,allocStr:g.allocStr||'',retraits:g.retraits||'',
     onb:g.onb||'',cut:g.cut||'',ca:g.ca||BASE_CA,score:g.score===null||g.score===undefined?'':g.score,
@@ -579,11 +583,14 @@ async function pushGroup(g){
   else groups[i]={...groups[i],...body,score:body.score===''?null:body.score};
   localSave();
   if(!API_URL || API_URL.indexOf('PASTE_')===0)return;
+  pendingSaves++;
   try{
     await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
   }catch(e){
     const msg='Synchronisation impossible — la partie reste sur ce poste.';
     banner('admin-banner',msg); banner('game-banner',msg);
+  }finally{
+    pendingSaves--;
   }
 }
 
