@@ -676,7 +676,11 @@ async function fetchGroups(){
     await fetchGroups();
     setInterval(fetchGroups,3000);
   }
-  if(!teamParam){
+  /* Reprise automatique de la dernière équipe jouée sur ce poste — mais seulement
+     si on n'est pas déjà entré en pilotage ou dans une équipe entre-temps : le
+     fetch initial peut prendre plusieurs secondes (cold-start du backend), le
+     temps que l'animateur se connecte au pilotage avant que ce bloc s'exécute. */
+  if(!teamParam && !adminMode && !me){
     const saved=localStorage.getItem('atq4-me');
     if(saved){const g=groups.find(x=>x.id===saved);if(g)joinGroup(saved)}
   }
