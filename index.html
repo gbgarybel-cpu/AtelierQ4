@@ -633,9 +633,9 @@ function banner(id,msg){const el=$(id);if(!el)return;
 /* Lien direct par équipe : ?team=<id> dans l'URL rejoint cette équipe sans
    passer par l'écran de sélection. Prioritaire sur la reprise automatique. */
 const teamParam = new URLSearchParams(location.search).get('team');
-let teamParamJoined = false, teamJoinAttempts = 0;
+let teamParamJoined = false, teamJoinAttempts = 0, adminMode = false;
 function tryJoinFromUrl(){
-  if(teamParamJoined || !teamParam || me) return;
+  if(teamParamJoined || !teamParam || me || adminMode) return;
   const g=groups.find(x=>x.id===teamParam);
   if(g){ teamParamJoined=true; joinGroup(teamParam); }
 }
@@ -710,6 +710,7 @@ $('pwd').addEventListener('keydown',e=>{if(e.key==='Enter')$('btn-login').click(
 
 /* ═══════════ ADMIN ═══════════ */
 async function openAdmin(){
+  adminMode=true; // une fois en pilotage, plus jamais aspiré vers un lien ?team= resté dans l'URL
   show('s-admin');
   if(names===null)names=LOCAL_NAMES;
   $('names-state').textContent='noms réels visibles';
