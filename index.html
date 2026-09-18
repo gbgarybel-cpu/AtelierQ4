@@ -911,6 +911,11 @@ function joinGroup(id,fromAdmin){
   me={id:g.id,name:g.name,lead:g.lead,done:!!g.done};
   st=stateFromDoc(g);
   asAnimateur=!!fromAdmin;
+  if(fromAdmin){
+    // L'adresse reflète le lien qu'un membre de l'équipe utiliserait — pratique
+    // pour vérifier/copier, sans recharger ni déclencher la connexion auto.
+    try{history.pushState(null,'',location.pathname+'?team='+encodeURIComponent(id))}catch(e){}
+  }
   names=null;                       // personne ne voit les noms réels côté partie
   $('g-name').textContent=g.name;
   $('g-lead').textContent=g.lead||'';
@@ -921,7 +926,11 @@ function joinGroup(id,fromAdmin){
   show('s-game');
   setPhase(1);
 }
-$('btn-back').onclick=()=>{me=null;asAnimateur=false;openAdmin()};
+$('btn-back').onclick=()=>{
+  me=null;asAnimateur=false;
+  try{history.pushState(null,'',location.pathname)}catch(e){}
+  openAdmin();
+};
 $('tab-1').onclick=()=>setPhase(1);
 $('tab-2').onclick=()=>setPhase(2);
 function setPhase(p){
