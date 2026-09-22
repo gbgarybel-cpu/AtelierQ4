@@ -75,6 +75,8 @@ section{margin-bottom:40px}
 .metrics .m .val{font-size:15px;font-weight:600;font-family:"IBM Plex Mono",monospace}
 
 .card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+@media(max-width:860px){.twocol{grid-template-columns:1fr}}
 
 .techgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
 @media(max-width:860px){.techgrid{grid-template-columns:1fr}}
@@ -204,17 +206,29 @@ footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--line-2);font-
   </section>
 
   <section>
-    <div class="sectitle"><h2>Team Lead</h2></div>
-    <div class="card">
-      <table class="teamtable">
-        <thead><tr><th>Équipe</th><th>Groupe atelier</th><th>Agents</th><th>Retraits</th><th>Onboardings</th>
-          <th>Mouvements</th><th>CR3 équipe</th><th>AOV équipe</th><th>CA équipe (potentiel)</th></tr></thead>
-        <tbody id="realteamtable"></tbody>
-      </table>
-      <p class="hint" style="margin:12px 0 0">Vue par équipe de vente réelle (et non par groupe d'atelier) : pour chaque team lead,
-        les changements proposés dans le groupe d'atelier où il/elle a travaillé, appliqués uniquement à ses propres agents.
-        CR3 et AOV équipe = indice moyen pondéré des agents de l'équipe, avant → après ces changements. CA équipe = chiffre
-        d'affaires trimestriel estimé de l'équipe (base réelle + onboardings estimés).</p>
+    <div class="sectitle"><h2>Team</h2></div>
+    <div class="twocol">
+      <div class="card">
+        <h3 style="margin-bottom:12px">Par groupe d'atelier</h3>
+        <div class="ctable-wrap"><table class="teamtable">
+          <thead><tr><th>Équipe</th><th>Team lead(s)</th><th>Retraits</th><th>Onboardings</th>
+            <th>Mouvements</th><th>Gain CR3</th><th>Gain AOV</th></tr></thead>
+          <tbody id="teamtable"></tbody>
+        </table></div>
+        <p class="hint" style="margin:12px 0 0">Gain = écart entre l'indice CR3/AOV moyen du groupe et l'indice de départ
+          (<span id="baseline"></span>), avant tout changement.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:12px">Par équipe réelle (team lead)</h3>
+        <div class="ctable-wrap"><table class="teamtable">
+          <thead><tr><th>Équipe</th><th>Groupe atelier</th><th>Agents</th><th>Retraits</th><th>Onboardings</th>
+            <th>Mouvements</th><th>CR3 équipe</th><th>AOV équipe</th><th>CA équipe (potentiel)</th></tr></thead>
+          <tbody id="realteamtable"></tbody>
+        </table></div>
+        <p class="hint" style="margin:12px 0 0">Pour chaque team lead, les changements proposés dans le groupe d'atelier où il/elle a
+          travaillé, appliqués uniquement à ses propres agents. CR3/AOV équipe = indice moyen pondéré des agents de l'équipe, avant →
+          après. CA équipe = chiffre d'affaires trimestriel estimé de l'équipe.</p>
+      </div>
     </div>
   </section>
 
@@ -338,6 +352,17 @@ $('leaderboard').innerHTML = ranked.map((t,i)=>{
 }).join('');
 
 // ── Team ──
+$('baseline').textContent = 'CR3 ' + DATA.baseCr3.toFixed(1).replace('.',',') + ' % / AOV ' + eur(DATA.baseAov);
+$('teamtable').innerHTML = DATA.teamStats.map(t=>{
+  return '<tr><td class="tn">'+esc(GLABEL[t.name])+'</td>'+
+    '<td class="tl">'+esc(t.lead||'—')+'</td>'+
+    '<td class="num">'+t.removals+'</td>'+
+    '<td class="num">'+t.adds+'</td>'+
+    '<td class="num" style="font-weight:600">'+t.totalMoves+'</td>'+
+    '<td class="num" style="color:'+(t.cr3Gain>=0?'var(--gain)':'var(--loss)')+'">'+(t.cr3Gain>=0?'+ ':'− ')+Math.abs(t.cr3Gain).toFixed(2).replace('.',',')+' pt</td>'+
+    '<td class="num" style="color:'+(t.aovGain>=0?'var(--gain)':'var(--loss)')+'">'+signed(t.aovGain)+'</td></tr>';
+}).join('');
+
 $('realteamtable').innerHTML = REALTEAMS.map(t=>{
   return '<tr><td class="tn">'+esc(t.teamName)+'</td>'+
     '<td class="tl">'+esc(t.group)+'</td>'+
