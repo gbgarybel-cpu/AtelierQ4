@@ -1,0 +1,497 @@
+<title>Débrief Atelier Q4</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#E8ECEF; --surface:#FFFFFF; --raised:#F4F6F8;
+  --ink:#0F1720; --ink-2:#3D4C59; --ink-3:#6B7C8A;
+  --line:#D2DAE1; --line-2:#BCC7D0;
+  --accent:#0D6E6B; --accent-soft:#D6E9E8;
+  --gain:#157F4F; --gain-soft:#DCEFE4;
+  --loss:#B03A30; --loss-soft:#F6DFDC;
+  --warn:#8A6510; --warn-soft:#F5E8CD;
+  --star:#8A6510; --driver:#2A4A7B; --dog:#8C3A2E; --qmark:#5A6570;
+  --g1:#0D6E6B; --g2:#B0542E; --g3:#5B4B9C;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#080D13; --surface:#141C25; --raised:#1C2630;
+    --ink:#E8EDF2; --ink-2:#A8B6C2; --ink-3:#7A8896;
+    --line:#2A3742; --line-2:#3A4A57;
+    --accent:#3FB5B0; --accent-soft:#123331;
+    --gain:#4FC98A; --gain-soft:#0F2E20;
+    --loss:#E8776B; --loss-soft:#331613;
+    --warn:#D7A53F; --warn-soft:#2E2413;
+    --star:#D7A53F; --driver:#7FA8DC; --dog:#E8897A; --qmark:#93A1AD;
+    --g1:#3FB5B0; --g2:#E0935E; --g3:#9C8AE0;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#080D13; --surface:#141C25; --raised:#1C2630;
+  --ink:#E8EDF2; --ink-2:#A8B6C2; --ink-3:#7A8896;
+  --line:#2A3742; --line-2:#3A4A57;
+  --accent:#3FB5B0; --accent-soft:#123331;
+  --gain:#4FC98A; --gain-soft:#0F2E20;
+  --loss:#E8776B; --loss-soft:#331613;
+  --warn:#D7A53F; --warn-soft:#2E2413;
+  --star:#D7A53F; --driver:#7FA8DC; --dog:#E8897A; --qmark:#93A1AD;
+  --g1:#3FB5B0; --g2:#E0935E; --g3:#9C8AE0;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:Archivo,system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.5}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:700;letter-spacing:-0.01em}
+h2{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-3)}
+h3{font-size:15px;font-weight:600}
+.shell{max-width:1200px;margin:0 auto;padding:28px 22px 64px}
+.top{padding:6px 0 22px;border-bottom:1px solid var(--line-2);margin-bottom:24px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+h1{font-size:30px}
+.lede{color:var(--ink-2);font-size:14.5px;margin-top:8px;max-width:70ch}
+.snapshot{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:6px 12px;
+  border-radius:3px;background:var(--warn-soft);color:var(--warn);font-size:12px;font-weight:600}
+.snapshot::before{content:"●";font-size:8px}
+
+section{margin-bottom:40px}
+.sectitle{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+.sectitle h2{margin:0}
+.sectitle .n{font-size:12px;color:var(--ink-3)}
+
+.cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:860px){.cards3{grid-template-columns:1fr}}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;position:relative;overflow:hidden}
+.tcard::before{content:"";position:absolute;top:0;left:0;right:0;height:4px}
+.tcard.rank1::before{background:var(--gain)}
+.tcard.rank2::before{background:var(--accent)}
+.tcard.rank3::before{background:var(--ink-3)}
+.tcard .rank{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:2px}
+.tcard .tname{font-size:19px;font-weight:700;margin-bottom:2px}
+.tcard .lead{font-size:12.5px;color:var(--ink-3);margin-bottom:14px}
+.tcard .big{font-size:26px;font-weight:700;font-family:"IBM Plex Mono",monospace}
+.tcard .scoreline{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
+.tcard .scoreline .up{color:var(--gain)}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:12px;border-top:1px dashed var(--line)}
+.metrics .m .lab{font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-3);display:block;margin-bottom:2px}
+.metrics .m .val{font-size:15px;font-weight:600;font-family:"IBM Plex Mono",monospace}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px}
+
+.techgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+@media(max-width:860px){.techgrid{grid-template-columns:1fr}}
+.techcard{border:1px solid var(--line);border-radius:5px;padding:14px;background:var(--raised)}
+.techcard .th3{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.techrow{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--line)}
+.techrow:last-child{border-bottom:0}
+.techrow .v{font-family:"IBM Plex Mono",monospace;font-weight:600}
+.verdict{font-size:13px;color:var(--ink-2);line-height:1.65;padding:16px 18px;background:var(--accent-soft);
+  border-left:3px solid var(--accent);border-radius:0 4px 4px 0}
+.verdict b{color:var(--ink)}
+
+.patterngrid{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+@media(max-width:860px){.patterngrid{grid-template-columns:1fr}}
+.statpair{display:flex;gap:14px;margin-bottom:16px}
+.stat{flex:1;background:var(--raised);border:1px solid var(--line);border-radius:5px;padding:12px 14px}
+.stat .n2{font-size:22px;font-weight:700;font-family:"IBM Plex Mono",monospace}
+.stat .l2{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.barchart{display:flex;flex-direction:column;gap:9px}
+.barrow{display:grid;grid-template-columns:96px 1fr 38px;align-items:center;gap:8px;font-size:12px}
+.barrow .lab{color:var(--ink-2);font-weight:600}
+.bartrack{height:16px;background:var(--line);border-radius:3px;overflow:hidden;display:flex}
+.barfill{height:100%}
+.barfill.rm{background:var(--loss)}
+.barfill.ad{background:var(--gain)}
+.barrow .val{text-align:right;font-family:"IBM Plex Mono",monospace;font-weight:600}
+.chiplegend{display:flex;gap:14px;margin-top:10px;font-size:11.5px;color:var(--ink-3)}
+.chiplegend span{display:inline-flex;align-items:center;gap:5px}
+.sw{width:9px;height:9px;border-radius:2px}
+
+.searchbar{display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap}
+input#search{font:inherit;padding:9px 12px;border:1px solid var(--line-2);border-radius:4px;
+  background:var(--surface);color:var(--ink);width:280px;max-width:100%}
+input#search:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+.hint{font-size:12px;color:var(--ink-3)}
+
+.agrid{display:grid;grid-template-columns:200px repeat(3,1fr);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.agrid .headrow{display:contents}
+.agrid .hcell{background:var(--raised);padding:10px 12px;font-size:10.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.06em;color:var(--ink-3);border-bottom:1px solid var(--line-2);position:sticky;top:0}
+.agrid .agentcell{padding:12px;border-top:1px solid var(--line);border-right:1px solid var(--line);
+  background:var(--surface);display:flex;flex-direction:column;justify-content:center}
+.agrid .agentcell .an{font-weight:600;font-size:13px}
+.agrid .agentcell .ac{font-size:10.5px;color:var(--ink-3);font-family:"IBM Plex Mono",monospace}
+.agrid .teamcell{padding:10px 12px;border-top:1px solid var(--line);border-right:1px solid var(--line);
+  background:var(--surface);font-size:12px}
+.agrid .teamcell:last-child{border-right:0}
+.dline2{display:flex;align-items:baseline;gap:5px;padding:2px 0}
+.dline2.rm{color:var(--loss)}
+.dline2.ad{color:var(--gain)}
+.catx{color:var(--ink-3);font-size:10.5px}
+.empty2{color:var(--ink-3);font-size:11.5px}
+.row-alt .agentcell,.row-alt .teamcell{background:var(--raised)}
+.convbadge{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;
+  padding:1px 6px;border-radius:2px;background:var(--warn-soft);color:var(--warn);margin-top:3px}
+
+.teamtable{width:100%;border-collapse:collapse;font-size:13px}
+.teamtable th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-3);
+  font-weight:700;padding:0 12px 9px;border-bottom:1px solid var(--line-2)}
+.teamtable td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.teamtable tbody tr:last-child td{border-bottom:0}
+.teamtable .tn{font-weight:700}
+.teamtable .tl{color:var(--ink-3);font-size:12px}
+
+.consensusbox{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;padding:16px 18px;
+  background:var(--gain-soft);border-radius:5px;border-left:3px solid var(--gain)}
+.consensusbox .cstat{flex:1;min-width:140px}
+.consensusbox .cstat .cn{font-size:20px;font-weight:700;font-family:"IBM Plex Mono",monospace;color:var(--ink)}
+.consensusbox .cstat .cl{font-size:11.5px;color:var(--ink-2);margin-top:2px}
+
+.ctable{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:22px}
+.ctable th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-3);
+  font-weight:700;padding:0 10px 8px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+.ctable td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.ctable tbody tr:last-child td{border-bottom:0}
+.ctable tbody tr:hover{background:var(--raised)}
+.ctable .an2{font-weight:600}
+.ctable .ac2{font-size:10.5px;color:var(--ink-3);font-family:"IBM Plex Mono",monospace;display:block}
+.teampills{display:flex;gap:4px;flex-wrap:wrap}
+.tpill{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:2px;color:#fff;white-space:nowrap}
+.shift{font-family:"IBM Plex Mono",monospace;font-size:12px}
+.shift .arrow{color:var(--ink-3);margin:0 3px}
+.shift .better{color:var(--gain)}
+.shift .worse{color:var(--loss)}
+.ctable-wrap{overflow-x:auto}
+.subtitle2{font-size:13px;font-weight:700;margin:0 0 8px}
+
+.captable{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:14px}
+.captable th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-3);
+  font-weight:700;padding:0 10px 8px;border-bottom:1px solid var(--line-2)}
+.captable td{padding:8px 10px;border-bottom:1px solid var(--line)}
+.captable tbody tr:last-child td{border-bottom:0}
+.captable .catn{font-weight:600}
+.utilbar{display:flex;align-items:center;gap:7px}
+.utiltrack{flex:1;height:10px;background:var(--line);border-radius:2px;overflow:hidden;max-width:90px}
+.utilfill{height:100%;background:var(--accent)}
+.utilfill.hot{background:var(--warn)}
+.capranking{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.caprank{flex:1;min-width:150px;background:var(--raised);border:1px solid var(--line);border-radius:5px;padding:12px 14px}
+.caprank.win{border-color:var(--gain);background:var(--gain-soft)}
+.caprank .cpn{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.05em;font-weight:700}
+.caprank .cpv{font-size:22px;font-weight:700;font-family:"IBM Plex Mono",monospace;margin-top:2px}
+.tightgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:14px}
+.tightcard{border:1px solid var(--line);border-radius:4px;padding:9px 11px;background:var(--surface)}
+.tightcard.full3{border-color:var(--loss);background:var(--loss-soft)}
+.tightcard .tdn{font-weight:600;font-size:12.5px}
+.tightcard .tdc{font-size:10.5px;color:var(--ink-3);margin:2px 0 6px}
+.tightcard .tdteams{display:flex;gap:3px;flex-wrap:wrap}
+
+footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--line-2);font-size:11.5px;color:var(--ink-3)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="shell">
+  <div class="top">
+    <div class="eyebrow">Atelier Répartition Q4</div>
+    <h1>Débrief animateur</h1>
+    <p class="lede">Comparaison des 3 équipes — qui a retiré quoi, qui a onboardé qui, et quelle
+      technique a le mieux fonctionné. À utiliser en direct pour commenter les résultats avec le groupe.</p>
+    <div class="snapshot">Instantané en direct — aucune équipe n'a encore validé sa répartition finale</div>
+  </div>
+
+  <section>
+    <div class="sectitle"><h2>Classement</h2><span class="n" id="stamp"></span></div>
+    <div class="cards3" id="leaderboard"></div>
+  </section>
+
+  <section>
+    <div class="sectitle"><h2>Team</h2></div>
+    <div class="card">
+      <table class="teamtable">
+        <thead><tr><th>Équipe</th><th>Team lead(s)</th><th>Retraits</th><th>Onboardings</th>
+          <th>Mouvements</th><th>Gain CR3</th><th>Gain AOV</th></tr></thead>
+        <tbody id="teamtable"></tbody>
+      </table>
+      <p class="hint" style="margin:12px 0 0">Gain = écart entre l'indice CR3/AOV moyen de l'équipe et l'indice de départ
+        (<span id="baseline"></span>), avant tout changement.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sectitle"><h2>Quelle équipe a la meilleure technique ?</h2></div>
+    <div class="card">
+      <div class="techgrid" id="techgrid"></div>
+      <div class="verdict" id="verdict"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sectitle"><h2>Tendances communes</h2></div>
+    <div class="card">
+      <div class="patterngrid">
+        <div>
+          <div class="statpair">
+            <div class="stat"><div class="n2" id="convRm"></div><div class="l2">retraits identiques entre équipes<br>sur le même agent</div></div>
+            <div class="stat"><div class="n2" id="convAd"></div><div class="l2">onboardings identiques entre équipes<br>sur le même agent</div></div>
+          </div>
+          <p class="hint" style="margin:0 0 6px">49 des 50 agents ont été retouchés par au moins une équipe.
+            Là où plusieurs équipes ont fait exactement le même choix sans se concerter, c'est un signal fort —
+            regarde le tableau détaillé plus bas, trié pour faire remonter ces cas en premier.</p>
+        </div>
+        <div>
+          <div class="barchart" id="catchart"></div>
+          <div class="chiplegend"><span><i class="sw" style="background:var(--loss)"></i>Retraits</span>
+            <span><i class="sw" style="background:var(--gain)"></i>Onboardings</span></div>
+        </div>
+      </div>
+      <table class="captable">
+        <thead><tr><th>Catégorie</th><th>Groupe 1</th><th>Groupe 2</th><th>Groupe 3</th></tr></thead>
+        <tbody id="catUtilTable"></tbody>
+      </table>
+      <p class="hint" style="margin:10px 0 0">% de la capacité disponible réellement utilisée par l'équipe sur cette catégorie de destination — le meilleur signal de qui a le mieux exploité la marge de manœuvre disponible, catégorie par catégorie.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sectitle"><h2>Capacité marché</h2></div>
+    <p class="hint" style="margin:0 0 14px">Capacité totale disponible sur les 35 destinations : <b id="totalCapLine"></b>.
+      « Utilisation » = part de cette capacité effectivement occupée par l'équipe une fois sa répartition posée.</p>
+    <div class="card">
+      <div class="capranking" id="capranking"></div>
+      <h3 class="subtitle2">Destinations à capacité maximale (plus de place disponible)</h3>
+      <p class="hint" style="margin:0 0 10px">Ces destinations sont pleines pour au moins une équipe — en rouge,
+        celles pleines pour les <b>3 équipes à la fois</b> : c'est là que la capacité actuelle limite vraiment
+        ce qu'une équipe pourrait faire de mieux.</p>
+      <div class="tightgrid" id="tightgrid"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sectitle"><h2>Agents — ce que plusieurs équipes ont décidé pareil</h2></div>
+    <p class="hint" style="margin:0 0 14px">Chaque ligne ci-dessous est un retrait ou un onboarding fait
+      <b>indépendamment par au moins 2 équipes</b> sur le même agent, sans concertation. L'impact CR3/AOV est
+      calculé sur l'agent seul (avant → après ce changement précis, à partir de sa situation de départ).</p>
+    <div class="card">
+      <div class="consensusbox" id="consensusbox"></div>
+      <h3 class="subtitle2">Retraits consensuels (<span id="rmCount"></span>)</h3>
+      <div class="ctable-wrap"><table class="ctable">
+        <thead><tr><th>Agent</th><th>Destination</th><th>Équipes</th><th>Impact CA</th><th>CR3 agent</th><th>AOV agent</th></tr></thead>
+        <tbody id="consensusRm"></tbody>
+      </table></div>
+      <h3 class="subtitle2" style="margin-top:20px">Onboardings consensuels (<span id="adCount"></span>)</h3>
+      <div class="ctable-wrap"><table class="ctable">
+        <thead><tr><th>Agent</th><th>Destination</th><th>Équipes</th><th>Impact CA</th><th>CR3 agent</th><th>AOV agent</th></tr></thead>
+        <tbody id="consensusAd"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sectitle"><h2>Détail agent par agent</h2><span class="n" id="agentCount"></span></div>
+    <p class="hint" style="margin:0 0 12px">Ce que chaque équipe a retiré (rouge) et onboardé (vert) pour cet agent.
+      Trié par nombre d'équipes ayant touché à cet agent, les cas les plus consensuels en premier.</p>
+    <div class="searchbar">
+      <input id="search" type="text" placeholder="Chercher un agent…" autocomplete="off">
+      <span class="hint" id="searchCount"></span>
+    </div>
+    <div class="agrid" id="agrid"></div>
+  </section>
+
+  <footer>Généré depuis les données en direct de l'atelier — CA de départ réel, cibles de capacité N-1,
+    modèle d'estimation d'onboarding à 70 opps/mois. Les montants « si onboardé » sont des projections, pas des CA réalisés.</footer>
+</div>
+
+<script>
+const DATA = {"BASE_CA":10954007,"GISEMENT":6080370,"CA_REF":17034377,"TOTAL_CAP":349,"baseCr3":23.5,"baseAov":8185,"teamSummaries":[{"name":"Groupe 1","lead":"Stephanie / Lauren / Sophie","ca":13295182,"score":38.5,"cr3":23.92,"aov":8274},{"name":"Groupe 2","lead":"Vincent / Camille","ca":13456246,"score":41.2,"cr3":24.02,"aov":8558},{"name":"groupe 3","lead":"Solène / Marion","ca":13363788,"score":39.6,"cr3":24.41,"aov":8301}],"technique":[{"name":"Groupe 1","lead":"Stephanie / Lauren / Sophie","removalsTotal":40,"pctSmartRemovals":35,"addsTotal":46,"pctStarFocus":65,"realCaLostToRemovals":315892,"estCaGainedFromOnb":2657066,"caPerMove":27223},{"name":"Groupe 2","lead":"Vincent / Camille","removalsTotal":80,"pctSmartRemovals":29,"addsTotal":62,"pctStarFocus":60,"realCaLostToRemovals":1756573,"estCaGainedFromOnb":4206330,"caPerMove":17621},{"name":"groupe 3","lead":"Solène / Marion","removalsTotal":103,"pctSmartRemovals":44,"addsTotal":53,"pctStarFocus":47,"realCaLostToRemovals":1408392,"estCaGainedFromOnb":3795529,"caPerMove":15447}],"teamStats":[{"name":"Groupe 1","lead":"Stephanie / Lauren / Sophie","removals":40,"adds":46,"totalMoves":86,"cr3":23.919729246862378,"aov":8273.533990395345,"cr3Gain":0.4205478984861948,"aovGain":88.63880319394411},{"name":"Groupe 2","lead":"Vincent / Camille","removals":80,"adds":62,"totalMoves":142,"cr3":24.021730559246908,"aov":8557.927245319363,"cr3Gain":0.522549210870725,"aovGain":373.03205811796215},{"name":"groupe 3","lead":"Solène / Marion","removals":103,"adds":53,"totalMoves":156,"cr3":24.40647812268263,"aov":8301.069573791532,"cr3Gain":0.9072967743064453,"aovGain":116.17438659013169}],"patterns":{"totalRemovals":223,"convergentRemovals":56,"totalAdds":161,"convergentAdds":17,"removalCat":{"Star":77,"Volume Driver":61,"Question Mark":59,"Dog":23,"—":3},"addCat":{"Star":92,"Volume Driver":34,"Question Mark":32,"Dog":3},"agentsTouched":49,"totalAgents":50},"agentRows":[{"code":"A54","name":"Zoe Morales","teams":{"Groupe 1":{"removed":[{"nom":"Tanzania","cat":"Star","ca":4029}],"added":[{"nom":"Argentina","cat":"Star","ca":87977},{"nom":"Peru","cat":"Star","ca":60685}]},"Groupe 2":{"removed":[{"nom":"Canada","cat":"Volume Driver","ca":11371},{"nom":"Iceland","cat":"Star","ca":16330}],"added":[{"nom":"Namibia","cat":"Star","ca":67399},{"nom":"United States","cat":"Volume Driver","ca":61202}]},"groupe 3":{"removed":[{"nom":"Iceland","cat":"Star","ca":16330}],"added":[{"nom":"Indonesia","cat":"Volume Driver","ca":32173},{"nom":"Japan","cat":"Volume Driver","ca":49609},{"nom":"Sri Lanka","cat":"Question Mark","ca":46776}]}},"touchCount":3},{"code":"A52","name":"Victoria Nouchi","teams":{"Groupe 1":{"removed":[{"nom":"Indonesia","cat":"Volume Driver","ca":15910}],"added":[]},"Groupe 2":{"removed":[{"nom":"French Polynesia","cat":"Star","ca":50437},{"nom":"Indonesia","cat":"Volume Driver","ca":15910}],"added":[{"nom":"Japan","cat":"Volume Driver","ca":93078},{"nom":"United States","cat":"Volume Driver","ca":82021}]},"groupe 3":{"removed":[{"nom":"French Polynesia","cat":"Star","ca":50437},{"nom":"Indonesia","cat":"Volume Driver","ca":15910}],"added":[{"nom":"Chile","cat":"Question Mark","ca":112585}]}},"touchCount":3},{"code":"A51","name":"Valerie Aleksandrowicz","teams":{"Groupe 1":{"removed":[{"nom":"Kenya","cat":"Question Mark","ca":1447}],"added":[]},"Groupe 2":{"removed":[{"nom":"Kenya","cat":"Question Mark","ca":1447},{"nom":"United States","cat":"Volume Driver","ca":40234}],"added":[{"nom":"Norway","cat":"Volume Driver","ca":50044}]},"groupe 3":{"removed":[{"nom":"Botswana","cat":"Question Mark","ca":19562},{"nom":"Iceland","cat":"Star","ca":17926},{"nom":"Kenya","cat":"Question Mark","ca":1447},{"nom":"Namibia","cat":"Star","ca":22090},{"nom":"Tanzania","cat":"Star","ca":38227}],"added":[]}},"touchCount":3},{"code":"A49","name":"Thibaut Brachet","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"Cambodia","cat":"Question Mark","ca":37665},{"nom":"Namibia","cat":"Star","ca":43021},{"nom":"South Africa","cat":"Star","ca":41224}]},"Groupe 2":{"removed":[{"nom":"Thailand","cat":"Volume Driver","ca":39542},{"nom":"United States","cat":"Volume Driver","ca":73767}],"added":[{"nom":"South Africa","cat":"Star","ca":82448}]},"groupe 3":{"removed":[{"nom":"Costa Rica","cat":"Star","ca":0},{"nom":"Thailand","cat":"Volume Driver","ca":39542}],"added":[{"nom":"Argentina","cat":"Star","ca":107819},{"nom":"Namibia","cat":"Star","ca":68834}]}},"touchCount":3},{"code":"A46","name":"Philippe Tkatchouk","teams":{"Groupe 1":{"removed":[{"nom":"Thailand","cat":"Volume Driver","ca":6719}],"added":[]},"Groupe 2":{"removed":[{"nom":"Indonesia","cat":"Volume Driver","ca":13113},{"nom":"Thailand","cat":"Volume Driver","ca":6719}],"added":[{"nom":"United States","cat":"Volume Driver","ca":91988}]},"groupe 3":{"removed":[{"nom":"Indonesia","cat":"Volume Driver","ca":13113},{"nom":"Thailand","cat":"Volume Driver","ca":6719}],"added":[{"nom":"Peru","cat":"Star","ca":109454}]}},"touchCount":3},{"code":"A44","name":"Oceane Sabeur","teams":{"Groupe 1":{"removed":[{"nom":"Iceland","cat":"Star","ca":0}],"added":[]},"Groupe 2":{"removed":[{"nom":"Indonesia","cat":"Volume Driver","ca":0},{"nom":"Japan","cat":"Volume Driver","ca":13996},{"nom":"Malaysia","cat":"Dog","ca":8967},{"nom":"Thailand","cat":"Volume Driver","ca":25136}],"added":[]},"groupe 3":{"removed":[{"nom":"Brazil","cat":"Question Mark","ca":17164},{"nom":"French Polynesia","cat":"Star","ca":66408},{"nom":"Iceland","cat":"Star","ca":0},{"nom":"Japan","cat":"Volume Driver","ca":13996},{"nom":"Mauritius","cat":"Dog","ca":0}],"added":[{"nom":"Peru","cat":"Star","ca":61103},{"nom":"United States","cat":"Volume Driver","ca":51352}]}},"touchCount":3},{"code":"A43","name":"Mila Gascoin","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"Kenya","cat":"Question Mark","ca":72662},{"nom":"South Africa","cat":"Star","ca":69129}]},"Groupe 2":{"removed":[],"added":[{"nom":"Argentina","cat":"Star","ca":98876},{"nom":"Cambodia","cat":"Question Mark","ca":55266},{"nom":"South Africa","cat":"Star","ca":60488}]},"groupe 3":{"removed":[{"nom":"Portugal","cat":"Dog","ca":6869}],"added":[{"nom":"Argentina","cat":"Star","ca":158202}]}},"touchCount":3},{"code":"A40","name":"Marion Hucbourg Hernandez","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"French Polynesia","cat":"Star","ca":98418}]},"Groupe 2":{"removed":[],"added":[{"nom":"Argentina","cat":"Star","ca":119180},{"nom":"Peru","cat":"Star","ca":82209}]},"groupe 3":{"removed":[],"added":[{"nom":"Australia","cat":"Question Mark","ca":79195},{"nom":"French Polynesia","cat":"Star","ca":82015}]}},"touchCount":3},{"code":"A39","name":"Marine Hecquard","teams":{"Groupe 1":{"removed":[{"nom":"Mexico","cat":"Volume Driver","ca":33259}],"added":[{"nom":"Argentina","cat":"Star","ca":98206}]},"Groupe 2":{"removed":[{"nom":"Brazil","cat":"Question Mark","ca":25780},{"nom":"Seychelles","cat":"Question Mark","ca":0}],"added":[{"nom":"South Africa","cat":"Star","ca":70091}]},"groupe 3":{"removed":[{"nom":"Brazil","cat":"Question Mark","ca":25780},{"nom":"Colombia","cat":"Dog","ca":1908},{"nom":"Seychelles","cat":"Question Mark","ca":0}],"added":[{"nom":"Namibia","cat":"Star","ca":87776}]}},"touchCount":3},{"code":"A38","name":"Margot Bonnet","teams":{"Groupe 1":{"removed":[{"nom":"Portugal","cat":"Dog","ca":0},{"nom":"Sri Lanka","cat":"Question Mark","ca":12031}],"added":[{"nom":"Namibia","cat":"Star","ca":71059}]},"Groupe 2":{"removed":[{"nom":"Iceland","cat":"Star","ca":18793},{"nom":"Sri Lanka","cat":"Question Mark","ca":12031}],"added":[{"nom":"Namibia","cat":"Star","ca":71059}]},"groupe 3":{"removed":[{"nom":"Iceland","cat":"Star","ca":18793},{"nom":"Portugal","cat":"Dog","ca":0},{"nom":"Sri Lanka","cat":"Question Mark","ca":12031}],"added":[{"nom":"Australia","cat":"Question Mark","ca":73961},{"nom":"Botswana","cat":"Question Mark","ca":83559}]}},"touchCount":3},{"code":"A35","name":"Lucie Collado","teams":{"Groupe 1":{"removed":[{"nom":"Argentina","cat":"Star","ca":6050},{"nom":"Peru","cat":"Star","ca":21222}],"added":[{"nom":"Costa Rica","cat":"Star","ca":52225}]},"Groupe 2":{"removed":[{"nom":"South Africa","cat":"Star","ca":9804}],"added":[]},"groupe 3":{"removed":[{"nom":"Argentina","cat":"Star","ca":6050},{"nom":"Chile","cat":"Question Mark","ca":0},{"nom":"South Africa","cat":"Star","ca":9804}],"added":[{"nom":"Greece","cat":"Dog","ca":39587},{"nom":"Thailand","cat":"Volume Driver","ca":40356},{"nom":"United States","cat":"Volume Driver","ca":52026}]}},"touchCount":3},{"code":"A34","name":"Line Desmazures","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"Botswana","cat":"Question Mark","ca":57363},{"nom":"South Africa","cat":"Star","ca":46744},{"nom":"Tanzania","cat":"Star","ca":54582}]},"Groupe 2":{"removed":[{"nom":"Canada","cat":"Volume Driver","ca":26799},{"nom":"United States","cat":"Volume Driver","ca":30756}],"added":[{"nom":"Argentina","cat":"Star","ca":95513},{"nom":"Chile","cat":"Question Mark","ca":57002},{"nom":"Peru","cat":"Star","ca":65883}]},"groupe 3":{"removed":[{"nom":"United States","cat":"Volume Driver","ca":30756}],"added":[]}},"touchCount":3},{"code":"A32","name":"Laurine Ghis","teams":{"Groupe 1":{"removed":[{"nom":"South Africa","cat":"Star","ca":23083}],"added":[]},"Groupe 2":{"removed":[{"nom":"Mexico","cat":"Volume Driver","ca":30434},{"nom":"Namibia","cat":"Star","ca":32848}],"added":[{"nom":"Sri Lanka","cat":"Question Mark","ca":61256}]},"groupe 3":{"removed":[{"nom":"Namibia","cat":"Star","ca":32848},{"nom":"Oman","cat":"—","ca":0},{"nom":"Portugal","cat":"Dog","ca":13111}],"added":[{"nom":"Greece","cat":"Dog","ca":43560},{"nom":"Peru","cat":"Star","ca":68117},{"nom":"United States","cat":"Volume Driver","ca":57247}]}},"touchCount":3},{"code":"A29","name":"Joumala ElAlaoui","teams":{"Groupe 1":{"removed":[{"nom":"Canada","cat":"Volume Driver","ca":5575},{"nom":"United States","cat":"Volume Driver","ca":21503}],"added":[{"nom":"South Africa","cat":"Star","ca":70435}]},"Groupe 2":{"removed":[],"added":[{"nom":"Peru","cat":"Star","ca":63536}]},"groupe 3":{"removed":[],"added":[{"nom":"Indonesia","cat":"Volume Driver","ca":32749},{"nom":"South Africa","cat":"Star","ca":46957},{"nom":"Sri Lanka","cat":"Question Mark","ca":47613}]}},"touchCount":3},{"code":"A26","name":"Fiona Tandar","teams":{"Groupe 1":{"removed":[{"nom":"United States","cat":"Volume Driver","ca":23362}],"added":[{"nom":"Iceland","cat":"Star","ca":26328},{"nom":"Norway","cat":"Volume Driver","ca":24011}]},"Groupe 2":{"removed":[{"nom":"Mexico","cat":"Volume Driver","ca":8980},{"nom":"United States","cat":"Volume Driver","ca":23362}],"added":[]},"groupe 3":{"removed":[{"nom":"Canada","cat":"Volume Driver","ca":36834},{"nom":"Mexico","cat":"Volume Driver","ca":8980},{"nom":"Namibia","cat":"Star","ca":0},{"nom":"South Africa","cat":"Star","ca":0}],"added":[{"nom":"Argentina","cat":"Star","ca":223988}]}},"touchCount":3},{"code":"A25","name":"Fanny Mangin","teams":{"Groupe 1":{"removed":[{"nom":"Costa Rica","cat":"Star","ca":10567},{"nom":"Indonesia","cat":"Volume Driver","ca":8358},{"nom":"Thailand","cat":"Volume Driver","ca":16503}],"added":[{"nom":"South Africa","cat":"Star","ca":60754}]},"Groupe 2":{"removed":[{"nom":"Indonesia","cat":"Volume Driver","ca":8358},{"nom":"Thailand","cat":"Volume Driver","ca":16503}],"added":[]},"groupe 3":{"removed":[{"nom":"Iceland","cat":"Star","ca":12635},{"nom":"Kenya","cat":"Question Mark","ca":7565},{"nom":"Laos","cat":"Question Mark","ca":351},{"nom":"Namibia","cat":"Star","ca":39257},{"nom":"Tanzania","cat":"Star","ca":69119},{"nom":"Thailand","cat":"Volume Driver","ca":16503}],"added":[{"nom":"Peru","cat":"Star","ca":119881}]}},"touchCount":3},{"code":"A24","name":"Fabienne Pottelain","teams":{"Groupe 1":{"removed":[{"nom":"Maldives","cat":"Question Mark","ca":0},{"nom":"Portugal","cat":"Dog","ca":0}],"added":[{"nom":"Argentina","cat":"Star","ca":58957},{"nom":"Chile","cat":"Question Mark","ca":35186}]},"Groupe 2":{"removed":[{"nom":"Iceland","cat":"Star","ca":5771},{"nom":"Maldives","cat":"Question Mark","ca":0},{"nom":"Mauritius","cat":"Dog","ca":28971},{"nom":"Portugal","cat":"Dog","ca":0}],"added":[{"nom":"Argentina","cat":"Star","ca":66327},{"nom":"French Polynesia","cat":"Star","ca":45643},{"nom":"Japan","cat":"Volume Driver","ca":43634}]},"groupe 3":{"removed":[{"nom":"Iceland","cat":"Star","ca":5771},{"nom":"Maldives","cat":"Question Mark","ca":0},{"nom":"Portugal","cat":"Dog","ca":0},{"nom":"South Africa","cat":"Star","ca":10670}],"added":[]}},"touchCount":3},{"code":"A23","name":"Emy Chomon","teams":{"Groupe 1":{"removed":[{"nom":"Iceland","cat":"Star","ca":3161}],"added":[{"nom":"Argentina","cat":"Star","ca":59411},{"nom":"Peru","cat":"Star","ca":40981}]},"Groupe 2":{"removed":[{"nom":"Brazil","cat":"Question Mark","ca":21751}],"added":[{"nom":"Thailand","cat":"Volume Driver","ca":30533}]},"groupe 3":{"removed":[{"nom":"Brazil","cat":"Question Mark","ca":21751},{"nom":"Iceland","cat":"Star","ca":3161}],"added":[{"nom":"Mexico","cat":"Volume Driver","ca":34366},{"nom":"Thailand","cat":"Volume Driver","ca":30533}]}},"touchCount":3},{"code":"A17","name":"Constant Le Dantec","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"Costa Rica","cat":"Star","ca":56833},{"nom":"Mexico","cat":"Volume Driver","ca":54923}]},"Groupe 2":{"removed":[{"nom":"Chile","cat":"Question Mark","ca":5171}],"added":[{"nom":"Botswana","cat":"Question Mark","ca":81465},{"nom":"Namibia","cat":"Star","ca":69278},{"nom":"Tanzania","cat":"Star","ca":77515}]},"groupe 3":{"removed":[{"nom":"Brazil","cat":"Question Mark","ca":0},{"nom":"Chile","cat":"Question Mark","ca":5171}],"added":[]}},"touchCount":3},{"code":"A16","name":"Clement Thonneau","teams":{"Groupe 1":{"removed":[{"nom":"Argentina","cat":"Star","ca":5420},{"nom":"Australia","cat":"Question Mark","ca":3136},{"nom":"Brazil","cat":"Question Mark","ca":0},{"nom":"Cambodia","cat":"Question Mark","ca":0},{"nom":"Indonesia","cat":"Volume Driver","ca":0},{"nom":"Laos","cat":"Question Mark","ca":0},{"nom":"Malaysia","cat":"Dog","ca":0},{"nom":"Portugal","cat":"Dog","ca":0},{"nom":"Sri Lanka","cat":"Question Mark","ca":0}],"added":[]},"Groupe 2":{"removed":[{"nom":"Argentina","cat":"Star","ca":5420},{"nom":"Australia","cat":"Question Mark","ca":3136},{"nom":"Cambodia","cat":"Question Mark","ca":0},{"nom":"Laos","cat":"Question Mark","ca":0},{"nom":"Portugal","cat":"Dog","ca":0},{"nom":"Thailand","cat":"Volume Driver","ca":20197}],"added":[]},"groupe 3":{"removed":[{"nom":"Australia","cat":"Question Mark","ca":3136},{"nom":"Brazil","cat":"Question Mark","ca":0},{"nom":"Cambodia","cat":"Question Mark","ca":0},{"nom":"Indonesia","cat":"Volume Driver","ca":0},{"nom":"Laos","cat":"Question Mark","ca":0},{"nom":"Malaysia","cat":"Dog","ca":0},{"nom":"Portugal","cat":"Dog","ca":0},{"nom":"Sri Lanka","cat":"Question Mark","ca":0},{"nom":"Thailand","cat":"Volume Driver","ca":20197},{"nom":"Vietnam","cat":"Question Mark","ca":3267}],"added":[{"nom":"Canada","cat":"Volume Driver","ca":43818},{"nom":"United States","cat":"Volume Driver","ca":52997}]}},"touchCount":3},{"code":"A15","name":"Claire Lardenois","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"South Africa","cat":"Star","ca":49445}]},"Groupe 2":{"removed":[{"nom":"Costa Rica","cat":"Star","ca":10396},{"nom":"Indonesia","cat":"Volume Driver","ca":9380}],"added":[{"nom":"Australia","cat":"Question Mark","ca":67135},{"nom":"United States","cat":"Volume Driver","ca":58569}]},"groupe 3":{"removed":[{"nom":"Iceland","cat":"Star","ca":16364},{"nom":"Indonesia","cat":"Volume Driver","ca":9380}],"added":[]}},"touchCount":3},{"code":"A08","name":"Camille Lecomte","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"Indonesia","cat":"Volume Driver","ca":39775}]},"Groupe 2":{"removed":[{"nom":"Malaysia","cat":"Dog","ca":15956},{"nom":"South Africa","cat":"Star","ca":27753},{"nom":"Vietnam","cat":"Question Mark","ca":17882}],"added":[{"nom":"Peru","cat":"Star","ca":96459}]},"groupe 3":{"removed":[{"nom":"Iceland","cat":"Star","ca":18293}],"added":[{"nom":"Sri Lanka","cat":"Question Mark","ca":65058}]}},"touchCount":3},{"code":"A07","name":"Bertrand Cazabat","teams":{"Groupe 1":{"removed":[{"nom":"Tanzania","cat":"Star","ca":5660}],"added":[]},"Groupe 2":{"removed":[{"nom":"Iceland","cat":"Star","ca":15762},{"nom":"Seychelles","cat":"Question Mark","ca":19075},{"nom":"Tanzania","cat":"Star","ca":5660},{"nom":"United States","cat":"Volume Driver","ca":64606}],"added":[]},"groupe 3":{"removed":[{"nom":"Botswana","cat":"Question Mark","ca":40856},{"nom":"Iceland","cat":"Star","ca":15762},{"nom":"Kenya","cat":"Question Mark","ca":49669},{"nom":"Namibia","cat":"Star","ca":52345},{"nom":"Seychelles","cat":"Question Mark","ca":19075},{"nom":"South Africa","cat":"Star","ca":28248},{"nom":"Tanzania","cat":"Star","ca":5660}],"added":[{"nom":"Indonesia","cat":"Volume Driver","ca":97268}]}},"touchCount":3},{"code":"A06","name":"Aurelie Guesnet","teams":{"Groupe 1":{"removed":[{"nom":"Mexico","cat":"Volume Driver","ca":8928}],"added":[]},"Groupe 2":{"removed":[{"nom":"Mexico","cat":"Volume Driver","ca":8928},{"nom":"Thailand","cat":"Volume Driver","ca":29976}],"added":[]},"groupe 3":{"removed":[{"nom":"Mexico","cat":"Volume Driver","ca":8928}],"added":[]}},"touchCount":3},{"code":"A04","name":"Amandine Godin","teams":{"Groupe 1":{"removed":[{"nom":"Costa Rica","cat":"Star","ca":10528}],"added":[{"nom":"French Polynesia","cat":"Star","ca":48338},{"nom":"United States","cat":"Volume Driver","ca":40721}]},"Groupe 2":{"removed":[{"nom":"Costa Rica","cat":"Star","ca":10528},{"nom":"Greece","cat":"Dog","ca":18020},{"nom":"Iceland","cat":"Star","ca":5873}],"added":[{"nom":"Namibia","cat":"Star","ca":59792},{"nom":"South Africa","cat":"Star","ca":57295}]},"groupe 3":{"removed":[{"nom":"Costa Rica","cat":"Star","ca":10528},{"nom":"Greece","cat":"Dog","ca":18020},{"nom":"Iceland","cat":"Star","ca":5873},{"nom":"Oman","cat":"—","ca":0}],"added":[{"nom":"Argentina","cat":"Star","ca":112388},{"nom":"Kenya","cat":"Question Mark","ca":72268}]}},"touchCount":3},{"code":"A02","name":"Alexandre Paprocki","teams":{"Groupe 1":{"removed":[{"nom":"French Polynesia","cat":"Star","ca":5062}],"added":[]},"Groupe 2":{"removed":[],"added":[{"nom":"Chile","cat":"Question Mark","ca":40245},{"nom":"Namibia","cat":"Star","ca":43052},{"nom":"South Africa","cat":"Star","ca":41253}]},"groupe 3":{"removed":[],"added":[{"nom":"Namibia","cat":"Star","ca":57402}]}},"touchCount":3},{"code":"A01","name":"Alexandra Mennechez","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"Argentina","cat":"Star","ca":90789}]},"Groupe 2":{"removed":[{"nom":"Australia","cat":"Question Mark","ca":26460},{"nom":"Peru","cat":"Star","ca":69402}],"added":[{"nom":"Argentina","cat":"Star","ca":127105}]},"groupe 3":{"removed":[{"nom":"Australia","cat":"Question Mark","ca":26460},{"nom":"Brazil","cat":"Question Mark","ca":66831},{"nom":"Colombia","cat":"Dog","ca":0}],"added":[{"nom":"French Polynesia","cat":"Star","ca":87469},{"nom":"Tanzania","cat":"Star","ca":90796}]}},"touchCount":3},{"code":"A53","name":"Yann Magueur","teams":{"Groupe 1":{"removed":[],"added":[]},"Groupe 2":{"removed":[],"added":[{"nom":"Australia","cat":"Question Mark","ca":57007},{"nom":"French Polynesia","cat":"Star","ca":59037},{"nom":"Kenya","cat":"Question Mark","ca":55164}]},"groupe 3":{"removed":[{"nom":"Maldives","cat":"Question Mark","ca":0}],"added":[{"nom":"Australia","cat":"Question Mark","ca":71258},{"nom":"French Polynesia","cat":"Star","ca":73796}]}},"touchCount":2},{"code":"A50","name":"Thomas Guibert","teams":{"Groupe 1":{"removed":[],"added":[]},"Groupe 2":{"removed":[{"nom":"French Polynesia","cat":"Star","ca":22643},{"nom":"Iceland","cat":"Star","ca":9424},{"nom":"United States","cat":"Volume Driver","ca":16703}],"added":[]},"groupe 3":{"removed":[{"nom":"French Polynesia","cat":"Star","ca":22643},{"nom":"Iceland","cat":"Star","ca":9424},{"nom":"Italy","cat":"Dog","ca":0},{"nom":"Namibia","cat":"Star","ca":0},{"nom":"Tanzania","cat":"Star","ca":0},{"nom":"United States","cat":"Volume Driver","ca":16703}],"added":[{"nom":"Peru","cat":"Star","ca":89007}]}},"touchCount":2},{"code":"A48","name":"Scarlett Vis","teams":{"Groupe 1":{"removed":[{"nom":"Canada","cat":"Volume Driver","ca":3877}],"added":[{"nom":"Iceland","cat":"Star","ca":22942}]},"Groupe 2":{"removed":[],"added":[]},"groupe 3":{"removed":[{"nom":"Greece","cat":"Dog","ca":11388},{"nom":"New Zealand","cat":"Question Mark","ca":0}],"added":[{"nom":"South Africa","cat":"Star","ca":46435}]}},"touchCount":2},{"code":"A47","name":"Samantha Philippon-joubert","teams":{"Groupe 1":{"removed":[],"added":[]},"Groupe 2":{"removed":[],"added":[{"nom":"French Polynesia","cat":"Star","ca":48152}]},"groupe 3":{"removed":[{"nom":"Chile","cat":"Question Mark","ca":0},{"nom":"Tanzania","cat":"Star","ca":0}],"added":[{"nom":"Botswana","cat":"Question Mark","ca":57783},{"nom":"Namibia","cat":"Star","ca":49139}]}},"touchCount":2},{"code":"A45","name":"Pauline Preynat","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"Peru","cat":"Star","ca":105583}]},"Groupe 2":{"removed":[{"nom":"Argentina","cat":"Star","ca":86813},{"nom":"Costa Rica","cat":"Star","ca":19634}],"added":[]},"groupe 3":{"removed":[],"added":[]}},"touchCount":2},{"code":"A37","name":"Marceau Cattin","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"South Africa","cat":"Star","ca":90299}]},"Groupe 2":{"removed":[{"nom":"Tanzania","cat":"Star","ca":66339}],"added":[{"nom":"United States","cat":"Volume Driver","ca":102684}]},"groupe 3":{"removed":[],"added":[]}},"touchCount":2},{"code":"A36","name":"Malek Adjroud","teams":{"Groupe 1":{"removed":[{"nom":"Brazil","cat":"Question Mark","ca":3452}],"added":[{"nom":"Maldives","cat":"Question Mark","ca":60412},{"nom":"Seychelles","cat":"Question Mark","ca":43805}]},"Groupe 2":{"removed":[{"nom":"Brazil","cat":"Question Mark","ca":3452}],"added":[{"nom":"Maldives","cat":"Question Mark","ca":52860},{"nom":"South Africa","cat":"Star","ca":60613},{"nom":"Thailand","cat":"Volume Driver","ca":44555}]},"groupe 3":{"removed":[],"added":[]}},"touchCount":2},{"code":"A30","name":"Juliette Cazes","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"South Africa","cat":"Star","ca":59565},{"nom":"United States","cat":"Volume Driver","ca":56446}]},"Groupe 2":{"removed":[],"added":[]},"groupe 3":{"removed":[{"nom":"Iceland","cat":"Star","ca":23739}],"added":[{"nom":"Canada","cat":"Volume Driver","ca":46669},{"nom":"South Africa","cat":"Star","ca":59565},{"nom":"United States","cat":"Volume Driver","ca":56446}]}},"touchCount":2},{"code":"A27","name":"Guillaume Dupont","teams":{"Groupe 1":{"removed":[],"added":[]},"Groupe 2":{"removed":[{"nom":"Brazil","cat":"Question Mark","ca":16739}],"added":[{"nom":"French Polynesia","cat":"Star","ca":49947},{"nom":"Namibia","cat":"Star","ca":46337}]},"groupe 3":{"removed":[{"nom":"Ecuador","cat":"Dog","ca":0},{"nom":"Peru","cat":"Star","ca":28218},{"nom":"Vietnam","cat":"Question Mark","ca":13411}],"added":[]}},"touchCount":2},{"code":"A22","name":"Emilie Belguise","teams":{"Groupe 1":{"removed":[{"nom":"Canada","cat":"Volume Driver","ca":18183}],"added":[{"nom":"Costa Rica","cat":"Star","ca":49179},{"nom":"Peru","cat":"Star","ca":64771}]},"Groupe 2":{"removed":[],"added":[]},"groupe 3":{"removed":[],"added":[{"nom":"Malaysia","cat":"Dog","ca":21785},{"nom":"South Africa","cat":"Star","ca":50263}]}},"touchCount":2},{"code":"A21","name":"Eloïse Lebert","teams":{"Groupe 1":{"removed":[],"added":[]},"Groupe 2":{"removed":[],"added":[{"nom":"Cambodia","cat":"Question Mark","ca":63365},{"nom":"Namibia","cat":"Star","ca":72376}]},"groupe 3":{"removed":[],"added":[{"nom":"Botswana","cat":"Question Mark","ca":75651},{"nom":"French Polynesia","cat":"Star","ca":69346},{"nom":"Tanzania","cat":"Star","ca":71984}]}},"touchCount":2},{"code":"A20","name":"Ella Thevenet","teams":{"Groupe 1":{"removed":[{"nom":"Iceland","cat":"Star","ca":13449},{"nom":"Maldives","cat":"Question Mark","ca":2115}],"added":[{"nom":"Costa Rica","cat":"Star","ca":71632}]},"Groupe 2":{"removed":[{"nom":"French Polynesia","cat":"Star","ca":111071},{"nom":"Iceland","cat":"Star","ca":13449},{"nom":"United States","cat":"Volume Driver","ca":65518}],"added":[{"nom":"Costa Rica","cat":"Star","ca":71632},{"nom":"Thailand","cat":"Volume Driver","ca":61503}]},"groupe 3":{"removed":[],"added":[]}},"touchCount":2},{"code":"A19","name":"Elise Francois","teams":{"Groupe 1":{"removed":[],"added":[]},"Groupe 2":{"removed":[{"nom":"Mexico","cat":"Volume Driver","ca":12251},{"nom":"United States","cat":"Volume Driver","ca":15320}],"added":[{"nom":"Cambodia","cat":"Question Mark","ca":58492},{"nom":"Namibia","cat":"Star","ca":66810}]},"groupe 3":{"removed":[{"nom":"Canada","cat":"Volume Driver","ca":39312},{"nom":"Oman","cat":"—","ca":0},{"nom":"United States","cat":"Volume Driver","ca":15320}],"added":[{"nom":"Tanzania","cat":"Star","ca":104656}]}},"touchCount":2},{"code":"A18","name":"Edwige Clad","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"Cambodia","cat":"Question Mark","ca":32129},{"nom":"Vietnam","cat":"Question Mark","ca":26222}]},"Groupe 2":{"removed":[{"nom":"Costa Rica","cat":"Star","ca":9899},{"nom":"Indonesia","cat":"Volume Driver","ca":14430},{"nom":"Thailand","cat":"Volume Driver","ca":76145}],"added":[{"nom":"Mexico","cat":"Volume Driver","ca":50914},{"nom":"Norway","cat":"Volume Driver","ca":32349}]},"groupe 3":{"removed":[],"added":[]}},"touchCount":2},{"code":"A13","name":"Chloé Solanki","teams":{"Groupe 1":{"removed":[],"added":[]},"Groupe 2":{"removed":[{"nom":"Indonesia","cat":"Volume Driver","ca":29742},{"nom":"Maldives","cat":"Question Mark","ca":26481},{"nom":"Sri Lanka","cat":"Question Mark","ca":7284}],"added":[{"nom":"Argentina","cat":"Star","ca":110378},{"nom":"Peru","cat":"Star","ca":76137},{"nom":"South Africa","cat":"Star","ca":67524}]},"groupe 3":{"removed":[{"nom":"Iceland","cat":"Star","ca":9189},{"nom":"Namibia","cat":"Star","ca":0},{"nom":"Sri Lanka","cat":"Question Mark","ca":7284}],"added":[]}},"touchCount":2},{"code":"A11","name":"Charline Verdeaux","teams":{"Groupe 1":{"removed":[{"nom":"Costa Rica","cat":"Star","ca":4410},{"nom":"Peru","cat":"Star","ca":18894}],"added":[{"nom":"United States","cat":"Volume Driver","ca":46266}]},"Groupe 2":{"removed":[{"nom":"Canada","cat":"Volume Driver","ca":21442},{"nom":"Costa Rica","cat":"Star","ca":4410},{"nom":"Mexico","cat":"Volume Driver","ca":14683},{"nom":"Peru","cat":"Star","ca":18894}],"added":[{"nom":"South Africa","cat":"Star","ca":56960},{"nom":"Tanzania","cat":"Star","ca":66511}]},"groupe 3":{"removed":[],"added":[]}},"touchCount":2},{"code":"A10","name":"Charline Blas","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"Peru","cat":"Star","ca":104717}]},"Groupe 2":{"removed":[],"added":[]},"groupe 3":{"removed":[{"nom":"Costa Rica","cat":"Star","ca":7082},{"nom":"Laos","cat":"Question Mark","ca":0},{"nom":"Thailand","cat":"Volume Driver","ca":16438}],"added":[]}},"touchCount":2},{"code":"A03","name":"Alice Saint-Jean","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"South Africa","cat":"Star","ca":57195},{"nom":"United States","cat":"Volume Driver","ca":54199}]},"Groupe 2":{"removed":[],"added":[]},"groupe 3":{"removed":[{"nom":"Australia","cat":"Question Mark","ca":21381}],"added":[{"nom":"Argentina","cat":"Star","ca":130891}]}},"touchCount":2},{"code":"A42","name":"Melissa Braun","teams":{"Groupe 1":{"removed":[],"added":[]},"Groupe 2":{"removed":[],"added":[]},"groupe 3":{"removed":[{"nom":"New Zealand","cat":"Question Mark","ca":13381}],"added":[]}},"touchCount":1},{"code":"A28","name":"Helene Ristic","teams":{"Groupe 1":{"removed":[],"added":[]},"Groupe 2":{"removed":[{"nom":"Argentina","cat":"Star","ca":47697},{"nom":"Japan","cat":"Volume Driver","ca":18618}],"added":[{"nom":"French Polynesia","cat":"Star","ca":62145}]},"groupe 3":{"removed":[],"added":[]}},"touchCount":1},{"code":"A14","name":"Claire Henry","teams":{"Groupe 1":{"removed":[],"added":[{"nom":"Cambodia","cat":"Question Mark","ca":63859}]},"Groupe 2":{"removed":[],"added":[]},"groupe 3":{"removed":[],"added":[]}},"touchCount":1},{"code":"A12","name":"Charlotte Garrido","teams":{"Groupe 1":{"removed":[],"added":[]},"Groupe 2":{"removed":[],"added":[{"nom":"Argentina","cat":"Star","ca":120792},{"nom":"Peru","cat":"Star","ca":83321},{"nom":"Sri Lanka","cat":"Question Mark","ca":74928}]},"groupe 3":{"removed":[],"added":[]}},"touchCount":1}],"consensusRemovals":[{"code":"A52","name":"Victoria Nouchi","dest":"French Polynesia","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":50437,"cr3Before":23.2,"cr3After":25.1,"aovBefore":6504,"aovAfter":5126},{"code":"A49","name":"Thibaut Brachet","dest":"Thailand","cat":"Volume Driver","teams":["Groupe 2","Groupe 3"],"caImpact":39542,"cr3Before":25.1,"cr3After":25,"aovBefore":4506,"aovAfter":4486},{"code":"A32","name":"Laurine Ghis","dest":"Namibia","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":32848,"cr3Before":19.2,"cr3After":19.4,"aovBefore":9296,"aovAfter":8884},{"code":"A34","name":"Line Desmazures","dest":"United States","cat":"Volume Driver","teams":["Groupe 2","Groupe 3"],"caImpact":30756,"cr3Before":36.7,"cr3After":36,"aovBefore":4068,"aovAfter":3896},{"code":"A01","name":"Alexandra Mennechez","dest":"Australia","cat":"Question Mark","teams":["Groupe 2","Groupe 3"],"caImpact":26460,"cr3Before":22.6,"cr3After":23.2,"aovBefore":6740,"aovAfter":6053},{"code":"A39","name":"Marine Hecquard","dest":"Brazil","cat":"Question Mark","teams":["Groupe 2","Groupe 3"],"caImpact":25780,"cr3Before":18.5,"cr3After":18.9,"aovBefore":7353,"aovAfter":7249},{"code":"A26","name":"Fiona Tandar","dest":"United States","cat":"Volume Driver","teams":["Groupe 1","Groupe 2"],"caImpact":23362,"cr3Before":22.1,"cr3After":21.4,"aovBefore":5591,"aovAfter":5741},{"code":"A50","name":"Thomas Guibert","dest":"French Polynesia","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":22643,"cr3Before":21.6,"cr3After":22.1,"aovBefore":7375,"aovAfter":6793},{"code":"A23","name":"Emy Chomon","dest":"Brazil","cat":"Question Mark","teams":["Groupe 2","Groupe 3"],"caImpact":21751,"cr3Before":19,"cr3After":19.6,"aovBefore":5651,"aovAfter":5620},{"code":"A16","name":"Clement Thonneau","dest":"Thailand","cat":"Volume Driver","teams":["Groupe 2","Groupe 3"],"caImpact":20197,"cr3Before":10.6,"cr3After":10.5,"aovBefore":6296,"aovAfter":6433},{"code":"A07","name":"Bertrand Cazabat","dest":"Seychelles","cat":"Question Mark","teams":["Groupe 2","Groupe 3"],"caImpact":19075,"cr3Before":16.6,"cr3After":17.1,"aovBefore":12009,"aovAfter":12281},{"code":"A11","name":"Charline Verdeaux","dest":"Peru","cat":"Star","teams":["Groupe 1","Groupe 2"],"caImpact":18894,"cr3Before":25.6,"cr3After":24.8,"aovBefore":5645,"aovAfter":5602},{"code":"A38","name":"Margot Bonnet","dest":"Iceland","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":18793,"cr3Before":28.2,"cr3After":29.3,"aovBefore":5374,"aovAfter":5401},{"code":"A04","name":"Amandine Godin","dest":"Greece","cat":"Dog","teams":["Groupe 2","Groupe 3"],"caImpact":18020,"cr3Before":28,"cr3After":26.8,"aovBefore":4771,"aovAfter":5014},{"code":"A50","name":"Thomas Guibert","dest":"United States","cat":"Volume Driver","teams":["Groupe 2","Groupe 3"],"caImpact":16703,"cr3Before":21.6,"cr3After":20.6,"aovBefore":7375,"aovAfter":7532},{"code":"A25","name":"Fanny Mangin","dest":"Thailand","cat":"Volume Driver","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":16503,"cr3Before":18.4,"cr3After":18.1,"aovBefore":10147,"aovAfter":10544},{"code":"A54","name":"Zoe Morales","dest":"Iceland","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":16330,"cr3Before":17.5,"cr3After":18,"aovBefore":7354,"aovAfter":7746},{"code":"A52","name":"Victoria Nouchi","dest":"Indonesia","cat":"Volume Driver","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":15910,"cr3Before":23.2,"cr3After":22.6,"aovBefore":6504,"aovAfter":7140},{"code":"A07","name":"Bertrand Cazabat","dest":"Iceland","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":15762,"cr3Before":16.6,"cr3After":16.7,"aovBefore":12009,"aovAfter":12587},{"code":"A19","name":"Elise Francois","dest":"United States","cat":"Volume Driver","teams":["Groupe 2","Groupe 3"],"caImpact":15320,"cr3Before":28,"cr3After":27.2,"aovBefore":6666,"aovAfter":6748},{"code":"A44","name":"Oceane Sabeur","dest":"Japan","cat":"Volume Driver","teams":["Groupe 2","Groupe 3"],"caImpact":13996,"cr3Before":17.1,"cr3After":17,"aovBefore":9405,"aovAfter":9112},{"code":"A20","name":"Ella Thevenet","dest":"Iceland","cat":"Star","teams":["Groupe 1","Groupe 2"],"caImpact":13449,"cr3Before":20.5,"cr3After":21.4,"aovBefore":8886,"aovAfter":9264},{"code":"A46","name":"Philippe Tkatchouk","dest":"Indonesia","cat":"Volume Driver","teams":["Groupe 2","Groupe 3"],"caImpact":13113,"cr3Before":26.7,"cr3After":26,"aovBefore":8341,"aovAfter":8927},{"code":"A38","name":"Margot Bonnet","dest":"Sri Lanka","cat":"Question Mark","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":12031,"cr3Before":28.2,"cr3After":27.6,"aovBefore":5374,"aovAfter":5230},{"code":"A04","name":"Amandine Godin","dest":"Costa Rica","cat":"Star","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":10528,"cr3Before":28,"cr3After":27.9,"aovBefore":4771,"aovAfter":4747},{"code":"A35","name":"Lucie Collado","dest":"South Africa","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":9804,"cr3Before":20.5,"cr3After":20.4,"aovBefore":12246,"aovAfter":12278},{"code":"A50","name":"Thomas Guibert","dest":"Iceland","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":9424,"cr3Before":21.6,"cr3After":22,"aovBefore":7375,"aovAfter":7608},{"code":"A15","name":"Claire Lardenois","dest":"Indonesia","cat":"Volume Driver","teams":["Groupe 2","Groupe 3"],"caImpact":9380,"cr3Before":20.2,"cr3After":19.7,"aovBefore":4259,"aovAfter":4420},{"code":"A26","name":"Fiona Tandar","dest":"Mexico","cat":"Volume Driver","teams":["Groupe 2","Groupe 3"],"caImpact":8980,"cr3Before":22.1,"cr3After":21.9,"aovBefore":5591,"aovAfter":5799},{"code":"A06","name":"Aurelie Guesnet","dest":"Mexico","cat":"Volume Driver","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":8928,"cr3Before":27.3,"cr3After":27,"aovBefore":6320,"aovAfter":6403},{"code":"A25","name":"Fanny Mangin","dest":"Indonesia","cat":"Volume Driver","teams":["Groupe 1","Groupe 2"],"caImpact":8358,"cr3Before":18.4,"cr3After":18,"aovBefore":10147,"aovAfter":10610},{"code":"A13","name":"Chloé Solanki","dest":"Sri Lanka","cat":"Question Mark","teams":["Groupe 2","Groupe 3"],"caImpact":7284,"cr3Before":26.1,"cr3After":25.4,"aovBefore":10331,"aovAfter":10358},{"code":"A46","name":"Philippe Tkatchouk","dest":"Thailand","cat":"Volume Driver","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":6719,"cr3Before":26.7,"cr3After":26.2,"aovBefore":8341,"aovAfter":8839},{"code":"A35","name":"Lucie Collado","dest":"Argentina","cat":"Star","teams":["Groupe 1","Groupe 3"],"caImpact":6050,"cr3Before":20.5,"cr3After":20.1,"aovBefore":12246,"aovAfter":11637},{"code":"A04","name":"Amandine Godin","dest":"Iceland","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":5873,"cr3Before":28,"cr3After":29.2,"aovBefore":4771,"aovAfter":4827},{"code":"A24","name":"Fabienne Pottelain","dest":"Iceland","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":5771,"cr3Before":24.1,"cr3After":24.6,"aovBefore":4768,"aovAfter":4799},{"code":"A07","name":"Bertrand Cazabat","dest":"Tanzania","cat":"Star","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":5660,"cr3Before":16.6,"cr3After":16.9,"aovBefore":12009,"aovAfter":11497},{"code":"A16","name":"Clement Thonneau","dest":"Argentina","cat":"Star","teams":["Groupe 1","Groupe 2"],"caImpact":5420,"cr3Before":10.6,"cr3After":10.5,"aovBefore":6296,"aovAfter":5845},{"code":"A17","name":"Constant Le Dantec","dest":"Chile","cat":"Question Mark","teams":["Groupe 2","Groupe 3"],"caImpact":5171,"cr3Before":28.3,"cr3After":28.6,"aovBefore":8615,"aovAfter":8313},{"code":"A11","name":"Charline Verdeaux","dest":"Costa Rica","cat":"Star","teams":["Groupe 1","Groupe 2"],"caImpact":4410,"cr3Before":25.6,"cr3After":25.5,"aovBefore":5645,"aovAfter":5691},{"code":"A36","name":"Malek Adjroud","dest":"Brazil","cat":"Question Mark","teams":["Groupe 1","Groupe 2"],"caImpact":3452,"cr3Before":27.4,"cr3After":28.3,"aovBefore":8234,"aovAfter":8531},{"code":"A23","name":"Emy Chomon","dest":"Iceland","cat":"Star","teams":["Groupe 1","Groupe 3"],"caImpact":3161,"cr3Before":19,"cr3After":19.5,"aovBefore":5651,"aovAfter":5755},{"code":"A16","name":"Clement Thonneau","dest":"Australia","cat":"Question Mark","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":3136,"cr3Before":10.6,"cr3After":10.8,"aovBefore":6296,"aovAfter":5949},{"code":"A51","name":"Valerie Aleksandrowicz","dest":"Kenya","cat":"Question Mark","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":1447,"cr3Before":19,"cr3After":19.9,"aovBefore":14966,"aovAfter":14059},{"code":"A16","name":"Clement Thonneau","dest":"Brazil","cat":"Question Mark","teams":["Groupe 1","Groupe 3"],"caImpact":0,"cr3Before":10.6,"cr3After":10.8,"aovBefore":6296,"aovAfter":6311},{"code":"A16","name":"Clement Thonneau","dest":"Cambodia","cat":"Question Mark","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":0,"cr3Before":10.6,"cr3After":10.8,"aovBefore":6296,"aovAfter":6070},{"code":"A16","name":"Clement Thonneau","dest":"Indonesia","cat":"Volume Driver","teams":["Groupe 1","Groupe 3"],"caImpact":0,"cr3Before":10.6,"cr3After":10.4,"aovBefore":6296,"aovAfter":6471},{"code":"A16","name":"Clement Thonneau","dest":"Laos","cat":"Question Mark","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":0,"cr3Before":10.6,"cr3After":10.6,"aovBefore":6296,"aovAfter":6285},{"code":"A16","name":"Clement Thonneau","dest":"Malaysia","cat":"Dog","teams":["Groupe 1","Groupe 3"],"caImpact":0,"cr3Before":10.6,"cr3After":10.6,"aovBefore":6296,"aovAfter":6608},{"code":"A16","name":"Clement Thonneau","dest":"Portugal","cat":"Dog","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":0,"cr3Before":10.6,"cr3After":10.7,"aovBefore":6296,"aovAfter":6645},{"code":"A16","name":"Clement Thonneau","dest":"Sri Lanka","cat":"Question Mark","teams":["Groupe 1","Groupe 3"],"caImpact":0,"cr3Before":10.6,"cr3After":10.4,"aovBefore":6296,"aovAfter":6292},{"code":"A24","name":"Fabienne Pottelain","dest":"Maldives","cat":"Question Mark","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":0,"cr3Before":24.1,"cr3After":24.5,"aovBefore":4768,"aovAfter":4556},{"code":"A24","name":"Fabienne Pottelain","dest":"Portugal","cat":"Dog","teams":["Groupe 1","Groupe 2","Groupe 3"],"caImpact":0,"cr3Before":24.1,"cr3After":24.3,"aovBefore":4768,"aovAfter":5065},{"code":"A38","name":"Margot Bonnet","dest":"Portugal","cat":"Dog","teams":["Groupe 1","Groupe 3"],"caImpact":0,"cr3Before":28.2,"cr3After":28.9,"aovBefore":5374,"aovAfter":5809},{"code":"A39","name":"Marine Hecquard","dest":"Seychelles","cat":"Question Mark","teams":["Groupe 2","Groupe 3"],"caImpact":0,"cr3Before":18.5,"cr3After":19.3,"aovBefore":7353,"aovAfter":7054},{"code":"A44","name":"Oceane Sabeur","dest":"Iceland","cat":"Star","teams":["Groupe 1","Groupe 3"],"caImpact":0,"cr3Before":17.1,"cr3After":17.4,"aovBefore":9405,"aovAfter":9523}],"consensusAdds":[{"code":"A43","name":"Mila Gascoin","dest":"Argentina","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":131835,"cr3Before":27,"cr3After":27.7,"aovBefore":7686,"aovAfter":8447},{"code":"A40","name":"Marion Hucbourg Hernandez","dest":"French Polynesia","cat":"Star","teams":["Groupe 1","Groupe 3"],"caImpact":98418,"cr3Before":25.2,"cr3After":24.3,"aovBefore":6478,"aovAfter":7433},{"code":"A01","name":"Alexandra Mennechez","dest":"Argentina","cat":"Star","teams":["Groupe 1","Groupe 2"],"caImpact":90789,"cr3Before":22.6,"cr3After":23.2,"aovBefore":6740,"aovAfter":7386},{"code":"A43","name":"Mila Gascoin","dest":"South Africa","cat":"Star","teams":["Groupe 1","Groupe 2"],"caImpact":80650,"cr3Before":27,"cr3After":27.2,"aovBefore":7686,"aovAfter":7783},{"code":"A53","name":"Yann Magueur","dest":"French Polynesia","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":73796,"cr3Before":32.3,"cr3After":31.2,"aovBefore":6702,"aovAfter":7393},{"code":"A30","name":"Juliette Cazes","dest":"South Africa","cat":"Star","teams":["Groupe 1","Groupe 3"],"caImpact":71478,"cr3Before":16.8,"cr3After":17.1,"aovBefore":9060,"aovAfter":9115},{"code":"A53","name":"Yann Magueur","dest":"Australia","cat":"Question Mark","teams":["Groupe 2","Groupe 3"],"caImpact":71258,"cr3Before":32.3,"cr3After":31.3,"aovBefore":6702,"aovAfter":7281},{"code":"A30","name":"Juliette Cazes","dest":"United States","cat":"Volume Driver","teams":["Groupe 1","Groupe 3"],"caImpact":67735,"cr3Before":16.8,"cr3After":17.8,"aovBefore":9060,"aovAfter":8726},{"code":"A36","name":"Malek Adjroud","dest":"Maldives","cat":"Question Mark","teams":["Groupe 1","Groupe 2"],"caImpact":60412,"cr3Before":27.4,"cr3After":26.9,"aovBefore":8234,"aovAfter":8246},{"code":"A02","name":"Alexandre Paprocki","dest":"Namibia","cat":"Star","teams":["Groupe 2","Groupe 3"],"caImpact":57402,"cr3Before":25.4,"cr3After":24.6,"aovBefore":6049,"aovAfter":6370},{"code":"A49","name":"Thibaut Brachet","dest":"Namibia","cat":"Star","teams":["Groupe 1","Groupe 3"],"caImpact":57362,"cr3Before":25.1,"cr3After":24.1,"aovBefore":4506,"aovAfter":5147},{"code":"A29","name":"Joumala ElAlaoui","dest":"South Africa","cat":"Star","teams":["Groupe 1","Groupe 3"],"caImpact":56348,"cr3Before":19.3,"cr3After":19.6,"aovBefore":13532,"aovAfter":13358},{"code":"A49","name":"Thibaut Brachet","dest":"South Africa","cat":"Star","teams":["Groupe 1","Groupe 2"],"caImpact":54965,"cr3Before":25.1,"cr3After":24.7,"aovBefore":4506,"aovAfter":4887},{"code":"A38","name":"Margot Bonnet","dest":"Namibia","cat":"Star","teams":["Groupe 1","Groupe 2"],"caImpact":53294,"cr3Before":28.2,"cr3After":27.5,"aovBefore":5374,"aovAfter":5806},{"code":"A24","name":"Fabienne Pottelain","dest":"Argentina","cat":"Star","teams":["Groupe 1","Groupe 2"],"caImpact":53061,"cr3Before":24.1,"cr3After":24.4,"aovBefore":4768,"aovAfter":5215},{"code":"A20","name":"Ella Thevenet","dest":"Costa Rica","cat":"Star","teams":["Groupe 1","Groupe 2"],"caImpact":51166,"cr3Before":20.5,"cr3After":20.7,"aovBefore":8886,"aovAfter":8724},{"code":"A23","name":"Emy Chomon","dest":"Thailand","cat":"Volume Driver","teams":["Groupe 2","Groupe 3"],"caImpact":26716,"cr3Before":19,"cr3After":19.3,"aovBefore":5651,"aovAfter":5529}],"consensusScenario":{"cr3":24.04,"aov":8407,"cr3Gain":0.54,"aovGain":222,"ca":11491740,"caGain":537732,"nRemovals":56,"nAdds":17}};
+const CAP = {"totalDestCap":428,"totalAgentNeed":349,"capacityByTeam":[{"name":"Groupe 1","lead":"Stephanie / Lauren / Sophie","avgUtil":84.7,"byCat":{"Star":{"cap":161,"taken":134,"util":83.2},"Volume Driver":{"cap":141,"taken":114,"util":80.9},"Question Mark":{"cap":88,"taken":79,"util":89.8},"Dog":{"cap":35,"taken":25,"util":71.4}},"atCapacityCount":10},{"name":"Groupe 2","lead":"Vincent / Camille","avgUtil":80.2,"byCat":{"Star":{"cap":161,"taken":132,"util":82},"Volume Driver":{"cap":141,"taken":100,"util":70.9},"Question Mark":{"cap":88,"taken":75,"util":85.2},"Dog":{"cap":35,"taken":23,"util":65.7}},"atCapacityCount":14},{"name":"groupe 3","lead":"Solène / Marion","avgUtil":68.2,"byCat":{"Star":{"cap":161,"taken":107,"util":66.5},"Volume Driver":{"cap":141,"taken":116,"util":82.3},"Question Mark":{"cap":88,"taken":59,"util":67},"Dog":{"cap":35,"taken":19,"util":54.3}},"atCapacityCount":10}],"tightDestinations":[{"nom":"Botswana","cat":"Question Mark","slots":4,"teams":["Groupe 1","Groupe 2","Groupe 3"]},{"nom":"Japan","cat":"Volume Driver","slots":15,"teams":["Groupe 1","Groupe 2","Groupe 3"]},{"nom":"Cambodia","cat":"Question Mark","slots":8,"teams":["Groupe 1","Groupe 2"]},{"nom":"Chile","cat":"Question Mark","slots":8,"teams":["Groupe 1","Groupe 2"]},{"nom":"Greece","cat":"Dog","slots":5,"teams":["Groupe 1","Groupe 3"]},{"nom":"Kenya","cat":"Question Mark","slots":5,"teams":["Groupe 1","Groupe 2"]},{"nom":"New Zealand","cat":"Question Mark","slots":5,"teams":["Groupe 1","Groupe 2"]},{"nom":"Oman","cat":"—","slots":3,"teams":["Groupe 1","Groupe 2"]},{"nom":"Argentina","cat":"Star","slots":13,"teams":["Groupe 2","Groupe 3"]},{"nom":"Australia","cat":"Question Mark","slots":7,"teams":["Groupe 2","Groupe 3"]},{"nom":"French Polynesia","cat":"Star","slots":18,"teams":["Groupe 2","Groupe 3"]},{"nom":"Peru","cat":"Star","slots":12,"teams":["Groupe 2","Groupe 3"]},{"nom":"Sri Lanka","cat":"Question Mark","slots":9,"teams":["Groupe 2","Groupe 3"]},{"nom":"Mauritius","cat":"Dog","slots":3,"teams":["Groupe 1"]},{"nom":"South Africa","cat":"Star","slots":22,"teams":["Groupe 1"]},{"nom":"Namibia","cat":"Star","slots":19,"teams":["Groupe 2"]},{"nom":"Tanzania","cat":"Star","slots":14,"teams":["Groupe 2"]},{"nom":"Canada","cat":"Volume Driver","slots":30,"teams":["Groupe 3"]},{"nom":"Malaysia","cat":"Dog","slots":4,"teams":["Groupe 3"]}]};
+
+const nf = new Intl.NumberFormat('fr-FR');
+const eur = v => nf.format(Math.round(v)) + ' €';
+const mEur = v => (v/1e6).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' M€';
+const signed = v => (v>=0?'+ ':'− ') + nf.format(Math.abs(Math.round(v))) + ' €';
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $ = id => document.getElementById(id);
+const GCOLORS = {'Groupe 1':'var(--g1)','Groupe 2':'var(--g2)','groupe 3':'var(--g3)'};
+const GLABEL = {'Groupe 1':'Groupe 1','Groupe 2':'Groupe 2','groupe 3':'Groupe 3'};
+const TPILL = {'Groupe 1':'var(--g1)','Groupe 2':'var(--g2)','Groupe 3':'var(--g3)'};
+const GROUP_NAMES = ['Groupe 1','Groupe 2','groupe 3'];
+
+$('stamp').textContent = 'CA de départ ' + mEur(DATA.BASE_CA) + ' · gisement ' + eur(DATA.GISEMENT);
+
+// ── Classement ──
+const ranked = [...DATA.teamSummaries].sort((a,b)=>b.ca-a.ca);
+$('leaderboard').innerHTML = ranked.map((t,i)=>{
+  const dl = t.ca - DATA.BASE_CA;
+  return '<div class="tcard rank'+(i+1)+'">'+
+    '<div class="rank">#'+(i+1)+'</div>'+
+    '<div class="tname">'+esc(GLABEL[t.name])+'</div>'+
+    '<div class="lead">'+esc(t.lead||'—')+'</div>'+
+    '<div class="scoreline"><span class="big">'+t.score+' %</span><span class="up hint">score</span></div>'+
+    '<div class="metrics">'+
+      '<div class="m"><span class="lab">CA généré</span><span class="val">'+mEur(t.ca)+'</span></div>'+
+      '<div class="m"><span class="lab">Δ vs départ</span><span class="val" style="color:var(--gain)">'+signed(dl)+'</span></div>'+
+      '<div class="m"><span class="lab">CR3</span><span class="val">'+t.cr3.toFixed(1).replace('.',',')+' %</span></div>'+
+      '<div class="m"><span class="lab">AOV</span><span class="val">'+eur(t.aov)+'</span></div>'+
+    '</div></div>';
+}).join('');
+
+// ── Team ──
+$('baseline').textContent = 'CR3 ' + DATA.baseCr3.toFixed(1).replace('.',',') + ' % / AOV ' + eur(DATA.baseAov);
+$('teamtable').innerHTML = DATA.teamStats.map(t=>{
+  return '<tr><td class="tn">'+esc(GLABEL[t.name])+'</td>'+
+    '<td class="tl">'+esc(t.lead||'—')+'</td>'+
+    '<td class="num">'+t.removals+'</td>'+
+    '<td class="num">'+t.adds+'</td>'+
+    '<td class="num" style="font-weight:600">'+t.totalMoves+'</td>'+
+    '<td class="num" style="color:'+(t.cr3Gain>=0?'var(--gain)':'var(--loss)')+'">'+(t.cr3Gain>=0?'+ ':'− ')+Math.abs(t.cr3Gain).toFixed(2).replace('.',',')+' pt</td>'+
+    '<td class="num" style="color:'+(t.aovGain>=0?'var(--gain)':'var(--loss)')+'">'+signed(t.aovGain)+'</td></tr>';
+}).join('');
+
+// ── Technique ──
+$('techgrid').innerHTML = DATA.technique.map(t=>{
+  return '<div class="techcard">'+
+    '<div class="th3"><span class="dot" style="background:'+GCOLORS[t.name]+'"></span>'+esc(GLABEL[t.name])+'</div>'+
+    '<div class="techrow"><span>Mouvements totaux</span><span class="v">'+(t.removalsTotal+t.addsTotal)+'</span></div>'+
+    '<div class="techrow"><span>Retraits</span><span class="v">'+t.removalsTotal+'</span></div>'+
+    '<div class="techrow"><span>Onboardings</span><span class="v">'+t.addsTotal+'</span></div>'+
+    '<div class="techrow"><span>Retraits sur Dog/Question Mark</span><span class="v">'+t.pctSmartRemovals+' %</span></div>'+
+    '<div class="techrow"><span>Onboardings sur Star</span><span class="v">'+t.pctStarFocus+' %</span></div>'+
+    '<div class="techrow"><span>CA réel sacrifié (retraits)</span><span class="v" style="color:var(--loss)">'+eur(t.realCaLostToRemovals)+'</span></div>'+
+    '<div class="techrow"><span>CA estimé gagné (onboardings)</span><span class="v" style="color:var(--gain)">'+eur(t.estCaGainedFromOnb)+'</span></div>'+
+    '<div class="techrow"><span>CA par mouvement</span><span class="v">'+eur(t.caPerMove)+'</span></div>'+
+    '</div>';
+}).join('');
+
+// Verdict auto-généré à partir des chiffres
+(function(){
+  const byScore = [...DATA.teamSummaries].sort((a,b)=>b.score-a.score);
+  const winner = byScore[0];
+  const wt = DATA.technique.find(t=>t.name===winner.name);
+  const mostSurgical = [...DATA.technique].sort((a,b)=>b.caPerMove-a.caPerMove)[0];
+  const mostCautious = [...DATA.technique].sort((a,b)=>b.pctSmartRemovals-a.pctSmartRemovals)[0];
+  $('verdict').innerHTML =
+    '<b>'+esc(GLABEL[winner.name])+'</b> termine en tête ('+winner.score+' %) grâce à une stratégie de reshuffle '+
+    'plus agressive que les autres : '+wt.removalsTotal+' retraits pour '+wt.addsTotal+' onboardings, dont '+wt.pctStarFocus+' % '+
+    'directement sur des destinations Star. Ils ont accepté de sacrifier '+eur(wt.realCaLostToRemovals)+' de CA réel déjà acquis, '+
+    'en pariant sur un gain estimé de '+eur(wt.estCaGainedFromOnb)+' via l\'onboarding — le pari le plus payant des trois. '+
+    '<br><br><b>'+esc(GLABEL[mostSurgical.name])+'</b> a la meilleure efficacité par mouvement ('+eur(mostSurgical.caPerMove)+'/action) : '+
+    'moins de changements, mais mieux ciblés. <b>'+esc(GLABEL[mostCautious.name])+'</b> a le taux le plus élevé de retraits sur '+
+    'des catégories Dog/Question Mark ('+mostCautious.pctSmartRemovals+' %) — l\'approche la plus prudente sur l\'élagage, '+
+    'quitte à faire beaucoup de petits mouvements plutôt que quelques gros paris.';
+})();
+
+// ── Tendances ──
+$('convRm').textContent = DATA.patterns.convergentRemovals + ' / ' + DATA.patterns.totalRemovals;
+$('convAd').textContent = DATA.patterns.convergentAdds + ' / ' + DATA.patterns.totalAdds;
+
+(function(){
+  const cats = ['Star','Volume Driver','Question Mark','Dog'];
+  const maxV = Math.max(...cats.map(c=>Math.max(DATA.patterns.removalCat[c]||0, DATA.patterns.addCat[c]||0)));
+  $('catchart').innerHTML = cats.map(c=>{
+    const rm = DATA.patterns.removalCat[c]||0, ad = DATA.patterns.addCat[c]||0;
+    return '<div class="barrow"><span class="lab">'+c+'</span>'+
+      '<div class="bartrack"><div class="barfill rm" style="width:'+(rm/maxV*100)+'%"></div></div>'+
+      '<span class="val">'+rm+'</span></div>'+
+      '<div class="barrow"><span class="lab"></span>'+
+      '<div class="bartrack"><div class="barfill ad" style="width:'+(ad/maxV*100)+'%"></div></div>'+
+      '<span class="val">'+ad+'</span></div>';
+  }).join('');
+})();
+
+// ── Capacité par catégorie (dans Tendances communes) ──
+(function(){
+  const cats = ['Star','Volume Driver','Question Mark','Dog'];
+  $('catUtilTable').innerHTML = cats.map(cat=>{
+    const cells = GROUP_NAMES.map(gname=>{
+      const t = CAP.capacityByTeam.find(x=>x.name===gname);
+      const u = t.byCat[cat].util;
+      return '<td><div class="utilbar"><div class="utiltrack"><div class="utilfill'+(u>=95?' hot':'')+'" style="width:'+u+'%"></div></div><span class="num">'+u.toFixed(0)+' %</span></div></td>';
+    }).join('');
+    return '<tr><td class="catn">'+cat+'</td>'+cells+'</tr>';
+  }).join('');
+})();
+
+// ── Capacité marché ──
+$('totalCapLine').textContent = CAP.totalDestCap + ' postes disponibles pour ' + CAP.totalAgentNeed + ' postes à placer (marge de ' + (CAP.totalDestCap-CAP.totalAgentNeed) + ')';
+(function(){
+  const ranked = [...CAP.capacityByTeam].sort((a,b)=>b.avgUtil-a.avgUtil);
+  $('capranking').innerHTML = ranked.map((t,i)=>{
+    return '<div class="caprank'+(i===0?' win':'')+'"><div class="cpn">'+(i===0?'🏆 ':'')+esc(GLABEL[t.name])+'</div>'+
+      '<div class="cpv">'+t.avgUtil.toFixed(1).replace('.',',')+' %</div>'+
+      '<div class="hint">utilisation moyenne · '+t.atCapacityCount+' destinations pleines</div></div>';
+  }).join('');
+})();
+$('tightgrid').innerHTML = CAP.tightDestinations.map(d=>{
+  return '<div class="tightcard'+(d.teams.length===3?' full3':'')+'"><div class="tdn">'+esc(d.nom)+'</div>'+
+    '<div class="tdc">'+esc(d.cat)+' · '+d.slots+' places</div>'+
+    '<div class="tdteams">'+d.teams.map(t=>'<span class="tpill" style="background:'+TPILL[t]+'">'+esc(t)+'</span>').join('')+'</div></div>';
+}).join('');
+
+// ── Consensus ──
+function teamPills(teams){
+  return '<div class="teampills">'+teams.map(t=>'<span class="tpill" style="background:'+TPILL[t]+'">'+esc(t)+'</span>').join('')+'</div>';
+}
+function shiftCell(before, after, unit){
+  const better = after>=before;
+  const bStr = unit==='%' ? before.toFixed(1).replace('.',',')+' %' : eur(before);
+  const aStr = unit==='%' ? after.toFixed(1).replace('.',',')+' %' : eur(after);
+  return '<span class="shift">'+bStr+'<span class="arrow">→</span><span class="'+(better?'better':'worse')+'">'+aStr+'</span></span>';
+}
+(function(){
+  const cs = DATA.consensusScenario;
+  $('consensusbox').innerHTML =
+    '<div class="cstat"><div class="cn">'+(cs.cr3Gain>=0?'+ ':'− ')+Math.abs(cs.cr3Gain).toFixed(2).replace('.',',')+' pt</div><div class="cl">CR3 si on applique seulement le consensus ('+cs.nRemovals+' retraits + '+cs.nAdds+' onboardings)</div></div>'+
+    '<div class="cstat"><div class="cn">'+signed(cs.aovGain)+'</div><div class="cl">AOV, même scénario</div></div>'+
+    '<div class="cstat"><div class="cn">'+signed(cs.caGain)+'</div><div class="cl">CA généré, même scénario — à comparer aux '+mEur(DATA.GISEMENT)+' de gisement total</div></div>';
+})();
+$('rmCount').textContent = DATA.consensusRemovals.length;
+$('adCount').textContent = DATA.consensusAdds.length;
+$('consensusRm').innerHTML = DATA.consensusRemovals.map(r=>{
+  return '<tr><td><span class="an2">'+esc(r.name)+'</span><span class="ac2">'+esc(r.code)+'</span></td>'+
+    '<td>'+esc(r.dest)+' <span class="catx">('+esc(r.cat)+')</span></td>'+
+    '<td>'+teamPills(r.teams)+'</td>'+
+    '<td class="num" style="color:var(--loss)">− '+eur(r.caImpact)+'</td>'+
+    '<td>'+shiftCell(r.cr3Before, r.cr3After, '%')+'</td>'+
+    '<td>'+shiftCell(r.aovBefore, r.aovAfter, '€')+'</td></tr>';
+}).join('');
+$('consensusAd').innerHTML = DATA.consensusAdds.map(r=>{
+  return '<tr><td><span class="an2">'+esc(r.name)+'</span><span class="ac2">'+esc(r.code)+'</span></td>'+
+    '<td>'+esc(r.dest)+' <span class="catx">('+esc(r.cat)+')</span></td>'+
+    '<td>'+teamPills(r.teams)+'</td>'+
+    '<td class="num" style="color:var(--gain)">+ '+eur(r.caImpact)+'</td>'+
+    '<td>'+shiftCell(r.cr3Before, r.cr3After, '%')+'</td>'+
+    '<td>'+shiftCell(r.aovBefore, r.aovAfter, '€')+'</td></tr>';
+}).join('');
+
+// ── Tableau détaillé ──
+$('agentCount').textContent = DATA.patterns.agentsTouched + ' / ' + DATA.patterns.totalAgents + ' agents concernés';
+
+function cellHTML(team){
+  if(!team || (!team.removed.length && !team.added.length)) return '<span class="empty2">—</span>';
+  let h = '';
+  for(const r of team.removed) h += '<div class="dline2 rm">− '+esc(r.nom)+' <span class="catx">('+esc(r.cat)+')</span></div>';
+  for(const a of team.added) h += '<div class="dline2 ad">+ '+esc(a.nom)+' <span class="catx">('+esc(a.cat)+')</span></div>';
+  return h;
+}
+
+function renderGrid(filter){
+  const f = (filter||'').trim().toLowerCase();
+  const rows = DATA.agentRows.filter(r => !f || r.name.toLowerCase().includes(f) || r.code.toLowerCase().includes(f));
+  $('searchCount').textContent = f ? rows.length+' résultat'+(rows.length>1?'s':'') : '';
+  let html = '<div class="headrow">'+
+    '<div class="hcell">Agent</div>'+
+    '<div class="hcell">Groupe 1</div>'+
+    '<div class="hcell">Groupe 2</div>'+
+    '<div class="hcell">Groupe 3</div></div>';
+  html += rows.map((r,i)=>{
+    const alt = i%2===1 ? ' row-alt' : '';
+    return '<div class="agentcell'+alt+'"><span class="an">'+esc(r.name)+'</span><span class="ac">'+esc(r.code)+'</span>'+
+      (r.touchCount===3?'<span class="convbadge">3 équipes</span>':'')+'</div>'+
+      '<div class="teamcell'+alt+'">'+cellHTML(r.teams['Groupe 1'])+'</div>'+
+      '<div class="teamcell'+alt+'">'+cellHTML(r.teams['Groupe 2'])+'</div>'+
+      '<div class="teamcell'+alt+'">'+cellHTML(r.teams['groupe 3'])+'</div>';
+  }).join('');
+  $('agrid').innerHTML = html;
+}
+renderGrid('');
+$('search').addEventListener('input', e => renderGrid(e.target.value));
+</script>
